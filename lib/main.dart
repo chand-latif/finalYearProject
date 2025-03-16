@@ -82,7 +82,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         fit: BoxFit.cover,
                       ),
 
-                      const Text('Login with facebooook'),
+                      const Text('Login with facebook'),
                     ],
                   ),
                 ),
