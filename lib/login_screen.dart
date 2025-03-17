@@ -1,5 +1,6 @@
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:fix_easy/login_screen.dart';
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -167,7 +168,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Text('Don\'t have an account?'),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/accountType');
+                      },
                       child: Text('Sign Up'),
                     ),
                   ],

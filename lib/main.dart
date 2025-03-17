@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import 'account_type.dart';
+import 'sign_up.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,6 +15,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+       initialRoute: '/home', // Default route
+      routes: {
+        '/home': (context) => MyHomePage(title: 'FYP',),
+        '/accountType': (context) => ChooseAccountType(),
+        '/signUp': (context) => SignUp(),
+      },
       title: 'FYP',
       
       home: const MyHomePage(title: 'FYP',),
