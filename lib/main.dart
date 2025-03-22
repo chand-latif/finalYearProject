@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
 import 'sign_up.dart';
+import 'forgot_password.dart';
+import 'verficationOTP.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +22,8 @@ class MyApp extends StatelessWidget {
         '/home': (context) => MyHomePage(title: 'FYP',),
         '/accountType': (context) => ChooseAccountType(),
         '/signUp': (context) => SignUp(),
+        '/forgotPassword': (context) => forgotPassword(),
+        
       },
       title: 'FYP',
       

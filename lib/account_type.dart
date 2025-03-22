@@ -1,6 +1,6 @@
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:fix_easy/sign_up.dart';
+
 
 class ChooseAccountType extends StatefulWidget {
   const ChooseAccountType({super.key});

@@ -99,6 +99,17 @@ class _MyHomePageState extends State<MyHomePage> {
                         hintText: 'Enter your password',
                       ),
                     ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        
+                        TextButton(child: Text('Forgot Password?', style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold ), textAlign: TextAlign.center,),
+                        onPressed: (){
+                          Navigator.pushNamed(context, '/forgotPassword');
+                        },
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                   SizedBox(
