@@ -4,7 +4,8 @@ import 'login_screen.dart';
 import 'account_type.dart';
 import 'sign_up.dart';
 import 'forgot_password.dart';
-import 'verficationOTP.dart';
+import 'new_password.dart';
+import 'password_confirmation.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,6 +24,8 @@ class MyApp extends StatelessWidget {
         '/accountType': (context) => ChooseAccountType(),
         '/signUp': (context) => SignUp(),
         '/forgotPassword': (context) => forgotPassword(),
+        '/newPassword': (context) => newPassword(),
+        '/passwordConfirmation': (context) => passwordConfirmation(),
         
       },
       title: 'FYP',

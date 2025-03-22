@@ -84,7 +84,7 @@ class _verificationOTPState extends State<verificationOTP> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/resetPassword');
+                  Navigator.pushNamed(context, '/newPassword');
                 },
                 child: Text('Verify', style: TextStyle(fontSize: 20)),
               ),
