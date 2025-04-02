@@ -9,7 +9,8 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
-  bool isObscure = true;
+  bool isObscurePassword = true;
+  bool isObscureConfirmPassword = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,10 +132,14 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       Text('Password'),
                       TextField(
-                        obscureText: isObscure,
+                        obscureText: isObscurePassword,
                         decoration: InputDecoration(
-                          suffixIcon: IconButton(icon: Icon(isObscure? Icons.visibility : Icons.visibility_off),
-                          onPressed: (){},
+                          suffixIcon: IconButton(icon: Icon(isObscurePassword? Icons.visibility : Icons.visibility_off),
+                          onPressed: (){
+                            setState(() {
+                              isObscurePassword = !isObscurePassword;
+                            });
+                          },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -162,10 +167,14 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       Text('Confirm Password'),
                       TextField(
-                        obscureText: isObscure,
+                        obscureText: isObscureConfirmPassword,
                         decoration: InputDecoration(
-                          suffixIcon: IconButton(icon: Icon(isObscure? Icons.visibility : Icons.visibility_off),
-                          onPressed: (){},
+                          suffixIcon: IconButton(icon: Icon(isObscureConfirmPassword? Icons.visibility : Icons.visibility_off),
+                          onPressed: (){
+                            setState(() {
+                              isObscureConfirmPassword = !isObscureConfirmPassword;
+                            });
+                          },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
