@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
@@ -18,20 +17,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-       initialRoute: '/home', // Default route
+      initialRoute: '/home', // Default route
       routes: {
-        '/home': (context) => MyHomePage(title: 'FYP',),
+        '/home': (context) => MyHomePage(title: 'FYP'),
         '/accountType': (context) => ChooseAccountType(),
         '/signUp': (context) => SignUp(),
         '/forgotPassword': (context) => forgotPassword(),
         '/newPassword': (context) => newPassword(),
         '/passwordConfirmation': (context) => passwordConfirmation(),
-        
       },
       title: 'FYP',
-      
-      home: const MyHomePage(title: 'FYP',),
+
+      home: const MyHomePage(title: 'FYP'),
     );
   }
 }
-

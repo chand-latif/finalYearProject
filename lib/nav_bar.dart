@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 
-class customNavBar extends StatefulWidget {
-  const customNavBar({super.key});
+class CustomNavBar extends StatefulWidget {
+  const CustomNavBar({super.key});
 
   @override
-  State<customNavBar> createState() => _customNavBarState();
+  State<CustomNavBar> createState() => _CustomNavBarState();
 }
 
-class _customNavBarState extends State<customNavBar>
+class _CustomNavBarState extends State<CustomNavBar>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -27,18 +27,9 @@ class _customNavBarState extends State<customNavBar>
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.business),
-          label: 'Business',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.school),
-          label: 'School',
-        ),
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+        BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Business'),
+        BottomNavigationBarItem(icon: Icon(Icons.school), label: 'School'),
       ],
     );
   }

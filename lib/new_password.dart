@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
 
-class newPassword extends StatefulWidget {
-  const newPassword({super.key});
+class NewPassword extends StatefulWidget {
+  const NewPassword({super.key});
 
   @override
-  State<newPassword> createState() => _newPasswordState();
+  State<NewPassword> createState() => _NewPasswordState();
 }
 
-class _newPasswordState extends State<newPassword> {
+class _NewPasswordState extends State<NewPassword> {
   bool isObscure = true;
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,6 @@ class _newPasswordState extends State<newPassword> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 30,
             children: [
-              
               Text(
                 'Create a new password. Ensure it differs from the previous one for the security',
                 style: TextStyle(
@@ -52,7 +51,9 @@ class _newPasswordState extends State<newPassword> {
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isObscure ? Icons.visibility_off : Icons.visibility,
+                              isObscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: Colors.grey,
                             ),
                             onPressed: () {
@@ -63,11 +64,17 @@ class _newPasswordState extends State<newPassword> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.white, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey, width: 1),
+                            borderSide: BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           hintText: 'Enter your new password',
                           contentPadding: EdgeInsets.symmetric(
@@ -92,7 +99,9 @@ class _newPasswordState extends State<newPassword> {
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isObscure ? Icons.visibility_off : Icons.visibility,
+                              isObscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
                               color: Colors.grey,
                             ),
                             onPressed: () {
@@ -103,11 +112,17 @@ class _newPasswordState extends State<newPassword> {
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.white, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey, width: 1),
+                            borderSide: BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           hintText: 'Confirm your new password',
                           contentPadding: EdgeInsets.symmetric(
@@ -121,25 +136,24 @@ class _newPasswordState extends State<newPassword> {
                 ],
               ),
               SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/passwordConfirmation');
+                  },
+                  child: Text('Update Password'),
                 ),
               ),
-              onPressed: () {
-                Navigator.pushNamed(context, '/passwordConfirmation');
-              },
-              child: Text('Update Password'),
-            ),
-          ),
             ],
           ),
-          
         ),
       ),
     );

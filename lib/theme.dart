@@ -7,6 +7,10 @@ class AppColors {
 }
 
 class AppTextStyles {
-  static const TextStyle headline = TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: AppColors.text);
+  static const TextStyle headline = TextStyle(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    color: AppColors.text,
+  );
   static const TextStyle body = TextStyle(fontSize: 16, color: AppColors.text);
 }

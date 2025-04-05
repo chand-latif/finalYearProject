@@ -1,14 +1,14 @@
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 
-class passwordConfirmation extends StatefulWidget {
-  const passwordConfirmation({super.key});
+class PasswordConfirmation extends StatefulWidget {
+  const PasswordConfirmation({super.key});
 
   @override
-  State<passwordConfirmation> createState() => _passwordConfirmationState();
+  State<PasswordConfirmation> createState() => _PasswordConfirmationState();
 }
 
-class _passwordConfirmationState extends State<passwordConfirmation> {
+class _PasswordConfirmationState extends State<PasswordConfirmation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,7 +49,7 @@ class _passwordConfirmationState extends State<passwordConfirmation> {
                 onPressed: () {
                   Navigator.pushNamed(context, '/home');
                 },
-                
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,

@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
-class verificationOTP extends StatefulWidget {
+class VerificationOTP extends StatefulWidget {
   final String email;
-  const verificationOTP({super.key, required this.email});
+  const VerificationOTP({super.key, required this.email});
 
   @override
-  State<verificationOTP> createState() => _verificationOTPState();
+  State<VerificationOTP> createState() => _VerificationOTPState();
 }
 
-class _verificationOTPState extends State<verificationOTP> {
+class _VerificationOTPState extends State<VerificationOTP> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +30,7 @@ class _verificationOTPState extends State<verificationOTP> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             RichText(
-            text:  TextSpan(
+              text: TextSpan(
                 text: 'Please enter the OTP sent to',
                 style: TextStyle(
                   color: Colors.grey[600],
@@ -52,8 +52,15 @@ class _verificationOTPState extends State<verificationOTP> {
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 7,
               children: [
-                Text('OTP', style: TextStyle(fontWeight: FontWeight.bold,color: AppColors.primary,fontSize: 18),),
-                SizedBox(height: 10,),
+                Text(
+                  'OTP',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(height: 10),
                 PinCodeTextField(
                   appContext: context,
                   length: 5, // Number of OTP digits

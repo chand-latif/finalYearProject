@@ -65,70 +65,84 @@ class _MyHomePageState extends State<MyHomePage> {
                       ],
                     ),
                     Column(
-                  spacing: 8,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Password'),
-                    TextField(
-                      obscureText: _isObscure,
-                      decoration: InputDecoration(
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _isObscure
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                          ),
-                          onPressed: () {
-                            setState(() {
-                              _isObscure = !_isObscure;
-                            });
-                          },
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.white, width: 2),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 0,
-                          horizontal: 10,
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: Colors.grey, width: 1),
-                        ),
-                        hintText: 'Enter your password',
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                      spacing: 8,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        
-                        TextButton(child: Text('Forgot Password?', style: TextStyle(color: AppColors.primary, fontSize: 16, fontWeight: FontWeight.bold ), textAlign: TextAlign.center,),
-                        onPressed: (){
-                          Navigator.pushNamed(context, '/forgotPassword');
-                        },
+                        Text('Password'),
+                        TextField(
+                          obscureText: _isObscure,
+                          decoration: InputDecoration(
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _isObscure
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  _isObscure = !_isObscure;
+                                });
+                              },
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: EdgeInsets.symmetric(
+                              vertical: 0,
+                              horizontal: 10,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: Colors.grey,
+                                width: 1,
+                              ),
+                            ),
+                            hintText: 'Enter your password',
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              child: Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onPressed: () {
+                                Navigator.pushNamed(context, '/forgotPassword');
+                              },
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: (){},
-                      child: Text('Sign In'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
+                        child: Text('Sign In'),
                       ),
                     ),
-                  ),
                   ],
                 ),
-                
+
                 Column(
                   spacing: 10,
                   children: [
@@ -146,32 +160,32 @@ class _MyHomePageState extends State<MyHomePage> {
                               height: 20,
                               fit: BoxFit.cover,
                             ),
-                    
+
                             const Text('Login with Google'),
                           ],
                         ),
                       ),
                     ),
                     SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Row(
-                      spacing: 20,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(
-                          'assets/facebook.png',
-                          width: 20,
-                          height: 20,
-                          fit: BoxFit.cover,
-                        ),
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {},
+                        child: Row(
+                          spacing: 20,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset(
+                              'assets/facebook.png',
+                              width: 20,
+                              height: 20,
+                              fit: BoxFit.cover,
+                            ),
 
-                        const Text('Login with facebook'),
-                      ],
+                            const Text('Login with facebook'),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
                   ],
                 ),
                 Row(
