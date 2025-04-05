@@ -20,15 +20,21 @@ class _SignUpState extends State<SignUp> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(20.0), //test
           child: Column(
             spacing: 20,
             children: [
-              Text('Make your future bright with us!', style: TextStyle(fontSize:20, color: AppColors.primary),),
+              Text(
+                'Make your future bright with us!',
+                style: TextStyle(fontSize: 20, color: AppColors.primary),
+              ),
               Column(
                 spacing: 10,
                 children: [
-                  Text('Create New Account', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                  Text(
+                    'Create New Account',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,7 +42,6 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       Text('Full Name'),
                       TextField(
-                        
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -68,7 +73,6 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       Text('Email Address'),
                       TextField(
-                        
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -100,7 +104,6 @@ class _SignUpState extends State<SignUp> {
                     children: [
                       Text('Phone Number'),
                       TextField(
-                        
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -134,28 +137,37 @@ class _SignUpState extends State<SignUp> {
                       TextField(
                         obscureText: isObscurePassword,
                         decoration: InputDecoration(
-                          suffixIcon: IconButton(icon: Icon(isObscurePassword? Icons.visibility : Icons.visibility_off),
-                          onPressed: (){
-                            setState(() {
-                              isObscurePassword = !isObscurePassword;
-                            });
-                          },
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscurePassword = !isObscurePassword;
+                              });
+                            },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.white, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey, width: 1),
+                            borderSide: BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             vertical: 0,
                             horizontal: 10,
                           ),
                           hintText: 'Enter your password',
-        
-                         
                         ),
                       ),
                     ],
@@ -169,28 +181,38 @@ class _SignUpState extends State<SignUp> {
                       TextField(
                         obscureText: isObscureConfirmPassword,
                         decoration: InputDecoration(
-                          suffixIcon: IconButton(icon: Icon(isObscureConfirmPassword? Icons.visibility : Icons.visibility_off),
-                          onPressed: (){
-                            setState(() {
-                              isObscureConfirmPassword = !isObscureConfirmPassword;
-                            });
-                          },
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscureConfirmPassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscureConfirmPassword =
+                                    !isObscureConfirmPassword;
+                              });
+                            },
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.white, width: 2),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.grey, width: 1),
+                            borderSide: BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
                           ),
                           contentPadding: EdgeInsets.symmetric(
                             vertical: 0,
                             horizontal: 10,
                           ),
                           hintText: 'Confirm your password',
-        
-                         
                         ),
                       ),
                     ],
@@ -198,35 +220,37 @@ class _SignUpState extends State<SignUp> {
                 ],
               ),
               SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                ),
-                onPressed: () {
-                  Navigator.pushNamed(context, '/loginScreen');
-                },
-                child: Text('Sign Up', style: TextStyle(fontSize: 20),),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text('Already have an account?'),
-                TextButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/home');
+                    Navigator.pushNamed(context, '/loginScreen');
                   },
-                  child: Text('Sign In', style: TextStyle(color: AppColors.primary, fontSize: 15),),
+                  child: Text('Sign Up', style: TextStyle(fontSize: 20)),
                 ),
-              ],
-            ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Already have an account?'),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/home');
+                    },
+                    child: Text(
+                      'Sign In',
+                      style: TextStyle(color: AppColors.primary, fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
             ],
-            
           ),
         ),
       ),
