@@ -5,6 +5,7 @@ import 'sign_up.dart';
 import 'forgot_password.dart';
 import 'new_password.dart';
 import 'password_confirmation.dart';
+import 'customer_home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,9 +23,10 @@ class MyApp extends StatelessWidget {
         '/home': (context) => MyHomePage(title: 'FYP'),
         '/accountType': (context) => ChooseAccountType(),
         '/signUp': (context) => SignUp(),
-        '/forgotPassword': (context) => forgotPassword(),
-        '/newPassword': (context) => newPassword(),
-        '/passwordConfirmation': (context) => passwordConfirmation(),
+        '/ForgotPassword': (context) => ForgotPassword(),
+        '/NewPassword': (context) => NewPassword(),
+        '/PasswordConfirmation': (context) => PasswordConfirmation(),
+        '/customerHome': (context) => CustomerHome(),
       },
       title: 'FYP',
 

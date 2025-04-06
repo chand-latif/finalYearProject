@@ -119,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 textAlign: TextAlign.center,
                               ),
                               onPressed: () {
-                                Navigator.pushNamed(context, '/forgotPassword');
+                                Navigator.pushNamed(context, '/ForgotPassword');
                               },
                             ),
                           ],
@@ -149,7 +149,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/customerHome');
+                        },
                         child: Row(
                           spacing: 20,
                           mainAxisAlignment: MainAxisAlignment.center,

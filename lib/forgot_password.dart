@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme.dart';
-import 'verficationOTP.dart';
+import 'verfication_otp.dart';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
