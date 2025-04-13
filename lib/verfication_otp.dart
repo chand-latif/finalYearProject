@@ -65,7 +65,7 @@ class _VerificationOTPState extends State<VerificationOTP> {
                   appContext: context,
                   length: 5, // Number of OTP digits
                   onChanged: (value) {
-                    print("OTP Entered: $value");
+                    //
                   },
                   pinTheme: PinTheme(
                     shape: PinCodeFieldShape.box,
