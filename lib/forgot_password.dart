@@ -1,6 +1,9 @@
+import 'package:fix_easy/verify_forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'verfication_otp.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ForgotPassword extends StatefulWidget {
   const ForgotPassword({super.key});
@@ -10,6 +13,51 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+  bool isVerifying = false;
+
+  Future<void> sendForgotPasswordOTP() async {
+    setState(() {
+      isVerifying = true;
+    });
+    final url = Uri.parse(
+      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ForgotPassword',
+    );
+    final body = {"userEmail": emailController.text.trim()};
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => VerifyForgotPassword(email: emailController.text),
+          ),
+        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('success')));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send OTP')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+    } finally {
+      setState(() {
+        isVerifying = false;
+      });
+    }
+  }
+
   final TextEditingController emailController = TextEditingController();
   @override
   Widget build(BuildContext context) {
@@ -67,26 +115,22 @@ class _ForgotPasswordState extends State<ForgotPassword> {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) =>
-                              VerificationOTP(email: emailController.text),
-                    ),
-                  );
-                },
-                child: Text('Send OTP'),
-              ),
+              child:
+                  isVerifying
+                      ? Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          sendForgotPasswordOTP();
+                        },
+                        child: Text('Send OTP'),
+                      ),
             ),
           ],
         ),
