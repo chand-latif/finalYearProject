@@ -1,7 +1,6 @@
 import 'package:fix_easy/verify_forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'theme.dart';
-import 'verfication_otp.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -32,20 +31,30 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       );
 
       if (response.statusCode == 200) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => VerifyForgotPassword(email: emailController.text),
-          ),
-        );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('success')));
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if ((data['statusCode'] == 200) == true) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) =>
+                      VerifyForgotPassword(email: emailController.text),
+            ),
+          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('success')));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'password change failed'),
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to send OTP')));
+        ).showSnackBar(SnackBar(content: Text('Server error.')));
       }
     } catch (e) {
       ScaffoldMessenger.of(

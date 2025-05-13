@@ -4,7 +4,6 @@ import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'customer_home.dart';
 
 class VerifyForgotPassword extends StatefulWidget {
   final String email;
@@ -29,13 +28,20 @@ class _VerifyForgotPasswordState extends State<VerifyForgotPassword> {
       );
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('OTP sent successfully')));
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data["statusCode" == 200] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'OTP sent successfully')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Failure sending OTP')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to send OTP')));
+        ).showSnackBar(SnackBar(content: Text('Server error!')));
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -60,19 +66,26 @@ class _VerifyForgotPasswordState extends State<VerifyForgotPassword> {
         // body: jsonEncode(body),
       );
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => NewPassword(email: '${widget.email}'),
-          ),
-        );
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['statusCode' == 200] == true) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => NewPassword(email: '${widget.email}'),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? 'Verification failed')),
+          );
+        }
       } else {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("failed to verify OTP")));
+        ).showSnackBar(SnackBar(content: Text("Server error")));
       }
     } catch (e) {
       ScaffoldMessenger.of(

@@ -1,10 +1,8 @@
-import 'package:fix_easy/verify_forgot_password.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
 import 'sign_up.dart';
 import 'forgot_password.dart';
-import 'new_password.dart';
 import 'password_confirmation.dart';
 import 'customer_home.dart';
 
@@ -25,7 +23,7 @@ class MyApp extends StatelessWidget {
         '/accountType': (context) => ChooseAccountType(),
         '/signUp': (context) => SignUp(),
         '/ForgotPassword': (context) => ForgotPassword(),
-        '/NewPassword': (context) => NewPassword(),
+
         '/PasswordConfirmation': (context) => PasswordConfirmation(),
         '/customerHome': (context) => CustomerHome(),
       },

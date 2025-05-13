@@ -1,14 +1,81 @@
+import 'package:fix_easy/sign_up.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'theme.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class NewPassword extends StatefulWidget {
-  const NewPassword({super.key});
+  final String email;
+  const NewPassword({super.key, required this.email});
 
   @override
   State<NewPassword> createState() => _NewPasswordState();
 }
 
+final TextEditingController newPasswordController = TextEditingController();
+final TextEditingController oldPasswordController = TextEditingController();
+
 class _NewPasswordState extends State<NewPassword> {
+  bool isVerifying = false;
+
+  Future<void> changePassword() async {
+    setState(() {
+      isVerifying = true;
+    });
+
+    final url = Uri.parse(
+      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ChangePassword',
+    );
+
+    final body = {
+      "email": "${widget.email}",
+      "currentPassword": oldPasswordController.text.trim(),
+      "newPassword": newPasswordController.text.trim(),
+    };
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if ((data['statusCode'] == 200) == true) {
+          Navigator.pushNamed(context, '/PasswordConfirmation');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Password changed successfully")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? "Password change failed"),
+            ),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Server error: ${response.statusCode}")),
+        );
+      }
+
+      // Navigator.pushNamed(context, '/PasswordConfirmation');
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   SnackBar(content: Text("Password changed successfully")),
+      // );
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error changing password: $e")));
+    } finally {
+      setState(() {
+        isVerifying = false;
+      });
+    }
+  }
+
   bool isObscure = true;
   @override
   Widget build(BuildContext context) {
@@ -43,11 +110,62 @@ class _NewPasswordState extends State<NewPassword> {
                     spacing: 10,
                     children: [
                       Text(
+                        'Current Password',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextField(
+                        obscureText: isObscure,
+                        controller: oldPasswordController,
+                        decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              isObscure
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                isObscure = !isObscure;
+                              });
+                            },
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.white,
+                              width: 2,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.grey,
+                              width: 1,
+                            ),
+                          ),
+                          hintText: 'Enter your current password',
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 0,
+                            horizontal: 10,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 10,
+                    children: [
+                      Text(
                         'New Password',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextField(
                         obscureText: isObscure,
+                        controller: newPasswordController,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -85,72 +203,27 @@ class _NewPasswordState extends State<NewPassword> {
                       ),
                     ],
                   ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 10,
-                    children: [
-                      Text(
-                        'Confirm Password',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextField(
-                        obscureText: isObscure,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isObscure
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: Colors.grey,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                isObscure = !isObscure;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          hintText: 'Confirm your new password',
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
               SizedBox(
                 width: double.infinity,
                 height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/passwordConfirmation');
-                  },
-                  child: Text('Update Password'),
-                ),
+                child:
+                    isVerifying
+                        ? Center(child: CircularProgressIndicator())
+                        : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () {
+                            changePassword();
+                          },
+                          child: Text('Update Password'),
+                        ),
               ),
             ],
           ),
