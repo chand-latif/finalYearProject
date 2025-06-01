@@ -37,7 +37,7 @@ class _VerificationOTPState extends State<VerificationOTP> {
       //   headers: {"Content-Type": "application/json"},
       //   body: jsonEncode(body),
       // );
-
+      //put call
       final response = await http.put(
         url,
         headers: {"Content-Type": "application/json"},
