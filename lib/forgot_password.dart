@@ -18,9 +18,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     setState(() {
       isVerifying = true;
     });
-    final url = Uri.parse(
-      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ForgotPassword',
-    );
+    final url = Uri.parse('https://fixease.pk/api/User/ForgotPassword');
     final body = {"userEmail": emailController.text.trim()};
 
     try {

@@ -15,9 +15,7 @@ class VerifyForgotPassword extends StatefulWidget {
 
 class _VerifyForgotPasswordState extends State<VerifyForgotPassword> {
   Future<void> sendForgotPasswordOTP() async {
-    final url = Uri.parse(
-      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ForgotPassword',
-    );
+    final url = Uri.parse('https://fixease.pk/api/User/ForgotPassword');
     final body = {"userEmail": '${widget.email}'};
 
     try {
@@ -55,7 +53,7 @@ class _VerifyForgotPasswordState extends State<VerifyForgotPassword> {
       isVerifying = true;
     });
     final url = Uri.parse(
-      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/VerifyForgotPasswordOtp?Email=$email&ForgotPwdOTP=$OTP',
+      'https://fixease.pk/api/User/VerifyForgotPasswordOtp?Email=$email&ForgotPwdOTP=$OTP',
     );
     // final body = {"email": email, "otp": OTP};
 
@@ -67,16 +65,16 @@ class _VerifyForgotPasswordState extends State<VerifyForgotPassword> {
       );
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
-        if (data['statusCode' == 200] == true) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
+        if (data['statusCode'] == 200) {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => NewPassword(email: '${widget.email}'),
             ),
           );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(data['message'] ?? 'Verification failed')),

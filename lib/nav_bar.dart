@@ -28,8 +28,8 @@ class _CustomNavBarState extends State<CustomNavBar>
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Business'),
-        BottomNavigationBarItem(icon: Icon(Icons.school), label: 'School'),
+        BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Bookings'),
+        BottomNavigationBarItem(icon: Icon(Icons.school), label: 'Profile'),
       ],
     );
   }

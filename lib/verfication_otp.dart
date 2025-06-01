@@ -3,6 +3,8 @@ import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
+import 'package:http/io_client.dart';
 
 class VerificationOTP extends StatefulWidget {
   final String email;
@@ -13,25 +15,46 @@ class VerificationOTP extends StatefulWidget {
 }
 
 class _VerificationOTPState extends State<VerificationOTP> {
+  // HttpClient _getHttpClient() {
+  //   final httpClient =
+  //       HttpClient()
+  //         ..badCertificateCallback =
+  //             (X509Certificate cert, String host, int port) => true;
+  //   return httpClient;
+  // }
+
   Future<void> sendOTP(String email) async {
     final url = Uri.parse(
-      "https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ResendVerificationOTP?Email=$email",
+      "https://fixease.pk/api/User/ResendVerificationOTP?Email=$email",
     );
 
     final body = {"email": email};
 
     try {
+      // final IOClient ioClient = IOClient(_getHttpClient());
+      // final response = await ioClient.post(
+      //   url,
+      //   headers: {"Content-Type": "application/json"},
+      //   body: jsonEncode(body),
+      // );
+
       final response = await http.put(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(body),
       );
-
-      if (response.statusCode != 200) {
-        // Handle error if OTP sending fails
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Failed to send OTP")));
+      final responseData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        if (responseData["statusCode"] == 200) {
+          // Handle error if OTP sending fails
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("OTP sent successfully")));
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("Failed to send OTP")));
+        }
       }
     } catch (e) {
       ScaffoldMessenger.of(
@@ -45,25 +68,39 @@ class _VerificationOTPState extends State<VerificationOTP> {
       isVerifying = true;
     });
     final url = Uri.parse(
-      "https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ConfirmEmail?Email=$email&OTP=$OTP",
+      "https://fixease.pk/api/User/ConfirmEmail?Email=$email&OTP=$OTP",
     );
-    // final body = {"email": email, "otp": OTP};
+    final body = {"email": email, "otp": OTP};
 
     try {
+      // final IOClient ioClient = IOClient(_getHttpClient());
+      // final response = await ioClient.post(
+      //   url,
+      //   headers: {"Content-Type": "application/json"},
+      //   // body: jsonEncode(body),
+      // );
+
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
-        // body: jsonEncode(body),
+        body: jsonEncode(body),
       );
+      final responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
-        Navigator.pushNamed(context, '/customerHome');
+        if (responseData["statusCode"] == 200) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
+          Navigator.pushNamed(context, '/customerHome');
+        } else {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text("failed to verify OTP")));
+        }
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("failed to verify OTP")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Server Error! Try again later.')),
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(

@@ -1,4 +1,3 @@
-import 'package:fix_easy/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'theme.dart';
@@ -24,9 +23,7 @@ class _NewPasswordState extends State<NewPassword> {
       isVerifying = true;
     });
 
-    final url = Uri.parse(
-      'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ChangePassword',
-    );
+    final url = Uri.parse('https://fixease.pk/api/User/ChangePassword');
 
     final body = {
       "email": "${widget.email}",
@@ -43,7 +40,7 @@ class _NewPasswordState extends State<NewPassword> {
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
 
-        if ((data['statusCode'] == 200) == true) {
+        if (data['statusCode'] == 200) {
           Navigator.pushNamed(context, '/PasswordConfirmation');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Password changed successfully")),
@@ -76,7 +73,8 @@ class _NewPasswordState extends State<NewPassword> {
     }
   }
 
-  bool isObscure = true;
+  bool isObscureOld = true;
+  bool isObscureNew = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,19 +112,19 @@ class _NewPasswordState extends State<NewPassword> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextField(
-                        obscureText: isObscure,
+                        obscureText: isObscureOld,
                         controller: oldPasswordController,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isObscure
+                              isObscureOld
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                               color: Colors.grey,
                             ),
                             onPressed: () {
                               setState(() {
-                                isObscure = !isObscure;
+                                isObscureOld = !isObscureOld;
                               });
                             },
                           ),
@@ -164,19 +162,19 @@ class _NewPasswordState extends State<NewPassword> {
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                       TextField(
-                        obscureText: isObscure,
+                        obscureText: isObscureNew,
                         controller: newPasswordController,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
                             icon: Icon(
-                              isObscure
+                              isObscureNew
                                   ? Icons.visibility_off
                                   : Icons.visibility,
                               color: Colors.grey,
                             ),
                             onPressed: () {
                               setState(() {
-                                isObscure = !isObscure;
+                                isObscureNew = !isObscureNew;
                               });
                             },
                           ),

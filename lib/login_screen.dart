@@ -22,7 +22,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> sendOTP(String email) async {
     final url = Uri.parse(
-      "https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ResendVerificationOTP?Email=$email",
+      "https://fixease.pk/api/User/ResendVerificationOTP?Email=$email",
     );
 
     final body = {"email": email};
@@ -53,9 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      var url = Uri.parse(
-        'https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/SignIn',
-      );
+      var url = Uri.parse('https://fixease.pk/api/User/SignIn');
 
       var response = await http.post(
         url,

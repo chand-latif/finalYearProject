@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'package:http/http.dart' as http;
 import 'verfication_otp.dart';
+// import 'package:http/io_client.dart';
+// import 'dart:io';
 
 class SignUp extends StatefulWidget {
   const SignUp({super.key});
@@ -304,19 +306,31 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
+  // HttpClient _getHttpClient() {
+  //   final httpClient =
+  //       HttpClient()
+  //         ..badCertificateCallback =
+  //             (X509Certificate cert, String host, int port) => true;
+  //   return httpClient;
+  // }
+
   Future<void> signUpUser() async {
-    final url = Uri.parse(
-      "https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/SignUP",
-    );
+    final url = Uri.parse("https://fixease.pk/api/User/SignUP");
 
     final body = {
       "userEmail": emailController.text,
       "password": passwordController.text,
       "phoneNo": phoneController.text,
-      "userType": 0,
+      "userType": "customer",
     };
 
     try {
+      // final IOClient ioClient = IOClient(_getHttpClient());
+      // final response = await ioClient.post(
+      //   url,
+      //   headers: {"Content-Type": "application/json"},
+      //   body: jsonEncode(body),
+      // );
       final response = await http.post(
         url,
         headers: {"Content-Type": "application/json"},
@@ -325,15 +339,13 @@ class _SignUpState extends State<SignUp> {
 
       final responseData = jsonDecode(response.body);
 
-      if (responseData["statusCode"] == 200) {
-        // User registered
+      if (response.statusCode == 200 && responseData["statusCode"] == 200) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("User registered successfully")));
-        // Now send OTP
+
         await sendOtp(emailController.text);
 
-        // Navigate to VerificationOTP screen manually with email
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -341,22 +353,76 @@ class _SignUpState extends State<SignUp> {
           ),
         );
       } else {
-        // Already exists or error
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(responseData["message"] ?? "Error")),
+          SnackBar(
+            content: Text(responseData["message"] ?? "Registration failed"),
+          ),
         );
       }
     } catch (e) {
+      print("Signup error: $e");
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong")));
+      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
     }
   }
 
+  // Future<void> signUpUser() async {
+  //   final url = Uri.parse("https://fixease.pk/api/User/SignUP");
+
+  //   final body = {
+  //     "userEmail": emailController.text,
+  //     "password": passwordController.text,
+  //     "phoneNo": phoneController.text,
+  //     "userType": "customer",
+  //   };
+
+  //   try {
+  //     final response = await http.post(
+  //       url,
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode(body),
+  //     );
+
+  //     final responseData = jsonDecode(response.body);
+  //     if (response.statusCode == 200) {
+  //       if (responseData["statusCode"] == 200) {
+  //         // User registered
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text("User registered successfully")),
+  //         );
+  //         // Now send OTP
+  //         await sendOtp(emailController.text);
+
+  //         // Navigate to VerificationOTP screen manually with email
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder:
+  //                 (context) => VerificationOTP(email: emailController.text),
+  //           ),
+  //         );
+  //       } else {
+  //         // Already exists or error
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //           SnackBar(content: Text(responseData["message"] ?? "Error")),
+  //         );
+  //       }
+  //     } else {
+  //       ScaffoldMessenger.of(
+  //         context,
+  //       ).showSnackBar(SnackBar(content: Text("Server error")));
+  //     }
+  //   } catch (e) {
+  //     print("Signup error: $e");
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+  //   }
+  // }
+
   Future<void> sendOtp(String email) async {
-    final url = Uri.parse(
-      "https://fixease20250417083804-e3gnb3ejfrbvames.eastasia-01.azurewebsites.net/api/User/ResendVerificationOTP",
-    );
+    final url = Uri.parse("https://fixease.pk/api/User/ResendVerificationOTP");
 
     final body = {"email": email};
 
