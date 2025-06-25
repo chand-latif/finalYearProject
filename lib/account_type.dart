@@ -1,3 +1,4 @@
+import 'package:fix_easy/sign_up.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 
@@ -45,7 +46,13 @@ class _ChooseAccountTypeState extends State<ChooseAccountType> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pushNamed(context, '/signUp');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => SignUp(accountType: 'Customer'),
+                          ),
+                        );
                       },
                       child: Text('Customer', style: TextStyle(fontSize: 25)),
                     ),
@@ -61,7 +68,12 @@ class _ChooseAccountTypeState extends State<ChooseAccountType> {
                         ),
                       ),
                       onPressed: () {
-                        Navigator.pushNamed(context, '/signUp');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SignUp(accountType: 'Seller'),
+                          ),
+                        );
                       },
                       child: Text(
                         'Service Provider',

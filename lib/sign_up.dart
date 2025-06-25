@@ -8,7 +8,8 @@ import 'verfication_otp.dart';
 // import 'dart:io';
 
 class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+  final String accountType;
+  const SignUp({super.key, required this.accountType});
 
   @override
   State<SignUp> createState() => _SignUpState();
@@ -314,14 +315,29 @@ class _SignUpState extends State<SignUp> {
   //   return httpClient;
   // }
 
+  // void navigateBasedOnAccountType(String accountType) {
+  //   if (accountType == 'seller') {
+  //     Navigator.pushNamed(context, 'createCompanyProfile');
+
+  //   } else if (accountType == 'customer') {
+  //     Navigator.pushNamed(context, 'createCompanyProfile');
+  //   } else {
+  //     // Default or unknown type
+  //     ScaffoldMessenger.of(
+  //       context,
+  //     ).showSnackBar(SnackBar(content: Text('Invalid account type')));
+  //   }
+  // }
+
   Future<void> signUpUser() async {
     final url = Uri.parse("https://fixease.pk/api/User/SignUP");
 
     final body = {
       "userEmail": emailController.text,
       "password": passwordController.text,
+      "username": nameController.text,
       "phoneNo": phoneController.text,
-      "userType": "customer",
+      "userType": widget.accountType.toString(),
     };
 
     try {

@@ -1,3 +1,4 @@
+import 'package:fix_easy/create_company_profile.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
@@ -32,7 +33,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => MyHomePage(title: 'FYP'),
         '/accountType': (context) => ChooseAccountType(),
-        '/signUp': (context) => SignUp(),
+        // '/signUp': (context) => SignUp(),
         '/ForgotPassword': (context) => ForgotPassword(),
 
         '/PasswordConfirmation': (context) => PasswordConfirmation(),

@@ -3,11 +3,14 @@ import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'create_company_profile.dart';
+import 'customer_home.dart';
 // import 'dart:io';
 // import 'package:http/io_client.dart';
 
 class VerificationOTP extends StatefulWidget {
   final String email;
+
   const VerificationOTP({super.key, required this.email});
 
   @override
@@ -91,7 +94,8 @@ class _VerificationOTPState extends State<VerificationOTP> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
-          Navigator.pushNamed(context, '/customerHome');
+          // Navigator.pushNamed(context, '/customerHome');
+          Navigator.pushNamed(context, '/home');
         } else {
           ScaffoldMessenger.of(
             context,

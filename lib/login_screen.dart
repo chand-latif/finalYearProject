@@ -1,8 +1,11 @@
+import 'package:fix_easy/customer_home.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'verfication_OTP.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fix_easy/create_company_profile.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -19,6 +22,51 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController passwordController = TextEditingController();
   bool _isObscure = true;
   bool _isLoading = false;
+
+  //fetch jwt token
+  Future<void> fetchUserInfoAndNavigate(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Token not found. Please log in again.')),
+      );
+      return;
+    }
+
+    final response = await http.get(
+      Uri.parse("https://fixease.pk/api/User/GetUserInformation"),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final userType = data['data']['userType'];
+
+      if (userType == 'Customer') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => CustomerHome()),
+        );
+      } else if (userType == 'Seller') {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) =>
+                    CreateCompanyProfileScreen(userID: data['data']['userId']),
+          ),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to fetch user info')));
+    }
+  }
 
   Future<void> sendOTP(String email) async {
     final url = Uri.parse(
@@ -66,33 +114,83 @@ class _MyHomePageState extends State<MyHomePage> {
 
       var responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        if (responseData['statusCode'] == 400) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(responseData['message'] ?? "Something went wrong"),
-            ),
-          );
-          if (responseData['message'] == "Account UnVerified !!") {
-            // Send OTP to user's email
-            await sendOTP(emailController.text.trim());
+        // if (responseData['statusCode'] == 400) {
+        //   ScaffoldMessenger.of(context).showSnackBar(
+        //     SnackBar(
+        //       content: Text(responseData['message'] ?? "Something went wrong"),
+        //     ),
+        //   );
+        //   if (responseData['message'] == "Account UnVerified !!") {
+        //     // Send OTP to user's email
+        //     await sendOTP(emailController.text.trim());
 
-            // Navigate to VerificationOTP screen with email parameter
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder:
-                    (context) =>
-                        VerificationOTP(email: emailController.text.trim()),
-              ),
-            );
-          } else {
+        //     // Navigate to VerificationOTP screen with email parameter
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(
+        //         builder:
+        //             (context) => VerificationOTP(
+        //               email: emailController.text.trim(),
+        //               accountType: 'customer',
+        //             ),
+        //       ),
+        //     );
+        //   } else {
+        //     ScaffoldMessenger.of(
+        //       context,
+        //     ).showSnackBar(SnackBar(content: Text(responseData)));
+        //   }
+        // } else {
+        //   // Successful login, navigate to home
+        //   final token = responseData['data']['jwtAccessToken']['access_token'];
+
+        //   final prefs = await SharedPreferences.getInstance();
+        //   await prefs.setString('auth_token', token);
+        //   await fetchUserInfoAndNavigate(context);
+        // }
+        var responseData = jsonDecode(response.body);
+
+        // Check if login failed with message
+        if (response.statusCode == 200) {
+          if (responseData['statusCode'] == 400) {
+            final message = responseData['message'] ?? "Something went wrong";
+
             ScaffoldMessenger.of(
               context,
-            ).showSnackBar(SnackBar(content: Text(responseData)));
+            ).showSnackBar(SnackBar(content: Text(message)));
+
+            // Check for unverified account
+            if (message == "Account UnVerified !!") {
+              await sendOTP(emailController.text.trim());
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) =>
+                          VerificationOTP(email: emailController.text.trim()),
+                ),
+              );
+            }
+
+            return;
           }
-        } else {
-          // Successful login, navigate to home
-          Navigator.pushNamed(context, '/customerHome');
+
+          //access token now
+          final token =
+              responseData['data']?['jwtAccessToken']?['access_Token'];
+
+          if (token == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Login failed: token missing")),
+            );
+            return;
+          }
+
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', token);
+
+          await fetchUserInfoAndNavigate(context);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
