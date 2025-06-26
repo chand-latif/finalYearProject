@@ -1,12 +1,11 @@
-import 'package:fix_easy/create_company_profile.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
-import 'sign_up.dart';
 import 'forgot_password.dart';
 import 'password_confirmation.dart';
 import 'customer_home.dart';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -17,25 +16,29 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
+void main() async {
   HttpOverrides.global = MyHttpOverrides();
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final token = prefs.getString('auth_token');
+  runApp(MyApp(initialRoute: token != null ? '/customerHome' : '/home'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final String initialRoute;
+
+  const MyApp({super.key, required this.initialRoute});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: '/home', // Default route
+      initialRoute: initialRoute, // Default route
       routes: {
         '/home': (context) => MyHomePage(title: 'FYP'),
         '/accountType': (context) => ChooseAccountType(),
         // '/signUp': (context) => SignUp(),
         '/ForgotPassword': (context) => ForgotPassword(),
-
         '/PasswordConfirmation': (context) => PasswordConfirmation(),
         '/customerHome': (context) => CustomerHome(),
       },

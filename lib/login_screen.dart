@@ -112,42 +112,8 @@ class _MyHomePageState extends State<MyHomePage> {
         }),
       );
 
-      var responseData = jsonDecode(response.body);
+      // var responseData = jsonDecode(response.body);
       if (response.statusCode == 200) {
-        // if (responseData['statusCode'] == 400) {
-        //   ScaffoldMessenger.of(context).showSnackBar(
-        //     SnackBar(
-        //       content: Text(responseData['message'] ?? "Something went wrong"),
-        //     ),
-        //   );
-        //   if (responseData['message'] == "Account UnVerified !!") {
-        //     // Send OTP to user's email
-        //     await sendOTP(emailController.text.trim());
-
-        //     // Navigate to VerificationOTP screen with email parameter
-        //     Navigator.push(
-        //       context,
-        //       MaterialPageRoute(
-        //         builder:
-        //             (context) => VerificationOTP(
-        //               email: emailController.text.trim(),
-        //               accountType: 'customer',
-        //             ),
-        //       ),
-        //     );
-        //   } else {
-        //     ScaffoldMessenger.of(
-        //       context,
-        //     ).showSnackBar(SnackBar(content: Text(responseData)));
-        //   }
-        // } else {
-        //   // Successful login, navigate to home
-        //   final token = responseData['data']['jwtAccessToken']['access_token'];
-
-        //   final prefs = await SharedPreferences.getInstance();
-        //   await prefs.setString('auth_token', token);
-        //   await fetchUserInfoAndNavigate(context);
-        // }
         var responseData = jsonDecode(response.body);
 
         // Check if login failed with message

@@ -3,8 +3,8 @@ import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'create_company_profile.dart';
-import 'customer_home.dart';
+// import 'create_company_profile.dart';
+// import 'customer_home.dart';
 // import 'dart:io';
 // import 'package:http/io_client.dart';
 
@@ -223,7 +223,7 @@ class _VerificationOTPState extends State<VerificationOTP> {
                           ),
                         ),
                         onPressed: () {
-                          verifyOTP('${widget.email}', OTP!);
+                          verifyOTP(widget.email, OTP!);
                         },
                         child: Text('Verify', style: TextStyle(fontSize: 20)),
                       ),
