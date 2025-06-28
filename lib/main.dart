@@ -6,6 +6,8 @@ import 'password_confirmation.dart';
 import 'customer_home.dart';
 import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'seller_home.dart';
+import 'splash_screen.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -21,19 +23,19 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final token = prefs.getString('auth_token');
-  runApp(MyApp(initialRoute: token != null ? '/customerHome' : '/home'));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final String initialRoute;
+  // final String initialRoute;
 
-  const MyApp({super.key, required this.initialRoute});
+  // const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      initialRoute: initialRoute, // Default route
+      // initialRoute: initialRoute, // Default route
       routes: {
         '/home': (context) => MyHomePage(title: 'FYP'),
         '/accountType': (context) => ChooseAccountType(),
@@ -41,10 +43,12 @@ class MyApp extends StatelessWidget {
         '/ForgotPassword': (context) => ForgotPassword(),
         '/PasswordConfirmation': (context) => PasswordConfirmation(),
         '/customerHome': (context) => CustomerHome(),
+        '/sellerHome': (context) => ServiceProviderHome(),
       },
       title: 'FYP',
 
-      home: const MyHomePage(title: 'FYP'),
+      // home: const MyHomePage(title: 'FYP'),
+      home: StartupScreen(),
     );
   }
 }

@@ -58,17 +58,17 @@ class _CustomerHomeState extends State<CustomerHome> {
     super.dispose();
   }
 
-  void _onServiceTap(String serviceName, String route) {
-    // Handle service selection
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$serviceName service selected'),
-        duration: Duration(seconds: 1),
-      ),
-    );
-    // Navigate to service page
-    // Navigator.pushNamed(context, route);
-  }
+  // void _onServiceTap(String serviceName, String route) {
+  //   // Handle service selection
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text('$serviceName service selected'),
+  //       duration: Duration(seconds: 1),
+  //     ),
+  //   );
+  //   // Navigate to service page
+  //   // Navigator.pushNamed(context, route);
+  // }
 
   void _onSearch(String query) {
     if (query.isNotEmpty) {
@@ -94,7 +94,7 @@ class _CustomerHomeState extends State<CustomerHome> {
         title: Text(
           'Home/Customer',
           style: TextStyle(
-            color: Colors.grey[600],
+            color: Colors.black,
             fontSize: 16,
             fontWeight: FontWeight.w400,
           ),
