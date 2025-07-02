@@ -1,23 +1,32 @@
 import 'dart:convert';
-
-import 'package:fix_easy/login_screen.dart';
 import 'package:flutter/material.dart';
-import 'theme.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fix_easy/customer_home.dart';
-import 'create_company_profile.dart';
 import 'seller_home.dart';
+import 'theme.dart';
+import 'dart:async';
 
 class StartupScreen extends StatefulWidget {
   @override
   _StartupScreenState createState() => _StartupScreenState();
 }
 
-class _StartupScreenState extends State<StartupScreen> {
+class _StartupScreenState extends State<StartupScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
+
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
+
+    _controller.forward();
     _checkAuthAndNavigate();
   }
 
@@ -43,7 +52,7 @@ class _StartupScreenState extends State<StartupScreen> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final userType = data['data']['userType'];
-      final userId = data['data']['userId'];
+      // final userId = data['data']['userId'];
 
       if (userType == 'Customer') {
         Navigator.pushReplacement(
@@ -64,7 +73,33 @@ class _StartupScreenState extends State<StartupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: CircularProgressIndicator()), // splash/loading UI
+      backgroundColor: AppColors.primary,
+      body: Center(
+        child: FadeTransition(
+          opacity: _animation,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // App Logo
+              Image.asset(
+                'assets/logo.png', // Ensure you have a logo in assets folder
+                width: 120,
+              ),
+              SizedBox(height: 20),
+              // App Tagline
+              Text(
+                'Your Home Service Partner',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

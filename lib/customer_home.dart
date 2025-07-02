@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'nav_bar.dart';
+import 'nav_bar_customer.dart';
 import 'package:fix_easy/theme.dart';
 
 class CustomerHome extends StatefulWidget {
@@ -73,7 +73,7 @@ class _CustomerHomeState extends State<CustomerHome> {
   void _onSearch(String query) {
     if (query.isNotEmpty) {
       // Handle search functionality
-      print('Searching for: $query');
+      // print('Searching for: $query');
       // Implement search logic here
     }
   }

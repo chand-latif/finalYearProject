@@ -5,7 +5,6 @@ import 'forgot_password.dart';
 import 'password_confirmation.dart';
 import 'customer_home.dart';
 import 'dart:io';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'seller_home.dart';
 import 'splash_screen.dart';
 
@@ -21,8 +20,8 @@ class MyHttpOverrides extends HttpOverrides {
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
-  final token = prefs.getString('auth_token');
+  // final prefs = await SharedPreferences.getInstance();
+  // final token = prefs.getString('auth_token');
   runApp(MyApp());
 }
 

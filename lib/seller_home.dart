@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'nav_bar.dart';
+import 'nav_bar_seller.dart';
 
 class ServiceProviderHome extends StatefulWidget {
   const ServiceProviderHome({super.key});
@@ -99,7 +99,8 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
             // Welcome Section
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(20),
+              padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
+
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.cyan, Colors.teal],
@@ -120,6 +121,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    spacing: 10.0,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +261,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
           ],
         ),
       ),
-      bottomNavigationBar: CustomNavBar(),
+      bottomNavigationBar: NavBarSeller(),
     );
   }
 
@@ -273,10 +275,10 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: EdgeInsets.all(15),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.06),

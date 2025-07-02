@@ -168,21 +168,8 @@ class _CreateCompanyProfileScreenState
         }
       }
 
-      // Debug: Print all fields being sent
-      print('=== REQUEST FIELDS ===');
-      request.fields.forEach((key, value) {
-        print('$key: $value');
-      });
-      print('=== FILES ===');
-      for (var file in request.files) {
-        print('${file.field}: ${file.filename}');
-      }
-
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
-
-      print('Response status: ${response.statusCode}');
-      print('Response body: $responseBody');
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
