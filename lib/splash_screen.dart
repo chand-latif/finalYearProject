@@ -55,11 +55,23 @@ class _StartupScreenState extends State<StartupScreen>
       // final userId = data['data']['userId'];
 
       if (userType == 'Customer') {
+        // Navigator.pushAndRemoveUntil(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => CustomerHome()),
+        //   (Route<dynamic> route) => false,
+        // );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => CustomerHome()),
         );
       } else if (userType == 'Seller') {
+        // Navigator.pushAndRemoveUntil(
+        //   context,
+        //   MaterialPageRoute(builder: (context) => ServiceProviderHome()),
+        //   (Route<dynamic> route) => false,
+        // );
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => ServiceProviderHome()),

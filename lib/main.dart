@@ -7,6 +7,7 @@ import 'customer_home.dart';
 import 'dart:io';
 import 'seller_home.dart';
 import 'splash_screen.dart';
+import 'profile_page_Customer.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -43,6 +44,7 @@ class MyApp extends StatelessWidget {
         '/PasswordConfirmation': (context) => PasswordConfirmation(),
         '/customerHome': (context) => CustomerHome(),
         '/sellerHome': (context) => ServiceProviderHome(),
+        '/customerProfile': (context) => ProfilePage(),
       },
       title: 'FYP',
 

@@ -1,3 +1,4 @@
+import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 import 'nav_bar_seller.dart';
 
@@ -70,7 +71,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.primary,
         leading: IconButton(
           icon: Icon(Icons.menu, color: Colors.black),
           onPressed: () {},
@@ -78,9 +79,9 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
         title: Text(
           'Service Provider Home',
           style: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
+            color: Colors.black,
+            fontSize: 20,
+            // fontWeight: FontWeight.w400,
           ),
         ),
         actions: [
