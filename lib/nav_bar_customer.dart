@@ -29,7 +29,7 @@ class _CustomNavBarState extends State<CustomNavBar>
         Navigator.pushNamed(context, "/customerHome");
         break;
       case 2:
-        Navigator.pushNamed(context, "/customerHome");
+        Navigator.pushNamed(context, "/customerProfile");
         break;
     }
   }

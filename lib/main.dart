@@ -1,3 +1,4 @@
+import 'package:fix_easy/profile_page_seller.dart';
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'account_type.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/customerHome': (context) => CustomerHome(),
         '/sellerHome': (context) => ServiceProviderHome(),
         '/customerProfile': (context) => ProfilePage(),
+        '/sellerProfile': (context) => ProfilePageSeller(),
       },
       title: 'FYP',
 

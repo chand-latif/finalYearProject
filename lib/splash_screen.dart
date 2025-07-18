@@ -27,7 +27,16 @@ class _StartupScreenState extends State<StartupScreen>
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
 
     _controller.forward();
-    _checkAuthAndNavigate();
+
+    Future.delayed(Duration.zero, () async {
+      await _checkAuthAndNavigate();
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose(); // ✅ This line fixes the Ticker issue
+    super.dispose();
   }
 
   Future<void> _checkAuthAndNavigate() async {

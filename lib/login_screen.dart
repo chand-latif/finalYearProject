@@ -45,6 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final userType = data['data']['userType'];
+      final companyCreated = data['data']['isCompanyProfileExist'];
 
       if (userType == 'Customer') {
         Navigator.pushReplacement(
@@ -52,14 +53,19 @@ class _MyHomePageState extends State<MyHomePage> {
           MaterialPageRoute(builder: (context) => CustomerHome()),
         );
       } else if (userType == 'Seller') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) =>
-                    CreateCompanyProfileScreen(userID: data['data']['userId']),
-          ),
-        );
+        if (companyCreated == false) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => CreateCompanyProfileScreen(
+                    userID: data['data']['userId'],
+                  ),
+            ),
+          );
+        } else {
+          Navigator.pushNamed(context, '/sellerHome');
+        }
       }
     } else {
       ScaffoldMessenger.of(

@@ -29,7 +29,7 @@ class _NavBarSellerState extends State<NavBarSeller>
         Navigator.pushNamed(context, "/sellerHome");
         break;
       case 2:
-        Navigator.pushNamed(context, "/customerProfile");
+        Navigator.pushNamed(context, "/sellerProfile");
         break;
     }
   }
