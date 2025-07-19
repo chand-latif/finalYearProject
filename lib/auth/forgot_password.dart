@@ -1,6 +1,6 @@
 import 'package:fix_easy/verify_forgot_password.dart';
 import 'package:flutter/material.dart';
-import 'theme.dart';
+import '../theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 

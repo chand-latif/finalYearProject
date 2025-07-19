@@ -24,6 +24,11 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
   bool switchValue = false;
 
   String companyAddress = '';
+  String companyName = '';
+  String companyPhoneNumber = '';
+  String companyWhatsappNumber = '';
+  String companyProfileURL = '';
+  String companyLogoURL = '';
   @override
   void initState() {
     super.initState();
@@ -73,6 +78,11 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
 
       setState(() {
         companyAddress = companyData['companyAddress'] ?? '';
+        companyName = companyData['companyName'] ?? '';
+        companyPhoneNumber = companyData['phoneNumer'] ?? '';
+        companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
+        companyProfileURL = data['profilePicture'] ?? '';
+        companyLogoURL = data['companyLogo'] ?? '';
       });
     }
   }
@@ -154,10 +164,6 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
                     SizedBox(height: 10),
                     Text(
                       "📅 Joining Date: $joiningDate",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                    Text(
-                      "📅 Joining Date: $companyAddress",
                       style: TextStyle(fontSize: 18),
                     ),
                   ],

@@ -1,4 +1,4 @@
-import 'package:fix_easy/new_password.dart';
+import 'package:fix_easy/auth/new_password.dart';
 import 'package:flutter/material.dart';
 import 'theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';

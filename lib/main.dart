@@ -1,9 +1,9 @@
 import 'package:fix_easy/profile_page_seller.dart';
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
-import 'account_type.dart';
-import 'forgot_password.dart';
-import 'password_confirmation.dart';
+import 'auth/login_screen.dart';
+import 'auth/account_type.dart';
+import 'auth/forgot_password.dart';
+import 'auth/password_confirmation.dart';
 import 'customer_home.dart';
 import 'dart:io';
 import 'seller_home.dart';

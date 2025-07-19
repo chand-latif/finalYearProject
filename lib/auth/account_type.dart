@@ -1,4 +1,4 @@
-import 'package:fix_easy/sign_up.dart';
+import 'package:fix_easy/auth/sign_up.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 

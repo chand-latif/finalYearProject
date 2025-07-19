@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'theme.dart';
+import '../theme.dart';
 import 'package:http/http.dart' as http;
-import 'verfication_otp.dart';
+import '../verfication_otp.dart';
 // import 'package:http/io_client.dart';
 // import 'dart:io';
 
