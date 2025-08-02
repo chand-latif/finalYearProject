@@ -1,14 +1,14 @@
-import 'package:fix_easy/profile_page_seller.dart';
+import 'package:fix_easy/seller_screens/profile_page_seller.dart';
 import 'package:flutter/material.dart';
 import 'auth/login_screen.dart';
 import 'auth/account_type.dart';
 import 'auth/forgot_password.dart';
 import 'auth/password_confirmation.dart';
-import 'customer_home.dart';
+import 'customer_screens/customer_home.dart';
 import 'dart:io';
-import 'seller_home.dart';
+import 'seller_screens/seller_home.dart';
 import 'splash_screen.dart';
-import 'profile_page_Customer.dart';
+import 'customer_screens/profile_page_Customer.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override

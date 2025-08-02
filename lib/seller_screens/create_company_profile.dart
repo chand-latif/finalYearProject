@@ -27,6 +27,7 @@ class _CreateCompanyProfileScreenState
   final companyAddressController = TextEditingController();
 
   File? companyLogo;
+  File? companyProfile;
   bool isLoading = false;
 
   Map<String, TimeOfDay?> workingHoursStart = {};
@@ -41,10 +42,17 @@ class _CreateCompanyProfileScreenState
     'Sunday': false,
   };
 
-  Future<void> pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() => companyLogo = File(pickedFile.path));
+  Future<void> pickImage(bool isProfile) async {
+    if (isProfile == true) {
+      final pickedFile1 = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile1 != null) {
+        setState(() => companyProfile = File(pickedFile1.path));
+      }
+    } else {
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() => companyLogo = File(pickedFile.path));
+      }
     }
   }
 
@@ -141,12 +149,27 @@ class _CreateCompanyProfileScreenState
         request.files.add(
           await http.MultipartFile.fromPath('CompanyLogo', companyLogo!.path),
         );
+        // request.files.add(
+        //   await http.MultipartFile.fromPath(
+        //     'ProfilePicture',
+        //     companyLogo!.path,
+        //   ),
+        // );
+      }
+
+      if (companyProfile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
             'ProfilePicture',
-            companyLogo!.path,
+            companyProfile!.path,
           ),
         );
+        // request.files.add(
+        //   await http.MultipartFile.fromPath(
+        //     'ProfilePicture',
+        //     companyProfile!.path,
+        //   ),
+        // );
       }
 
       // Add working hours for each day
@@ -178,7 +201,7 @@ class _CreateCompanyProfileScreenState
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushNamed(context, '/customerHome');
+        Navigator.pushNamed(context, '/sellerHome');
       } else {
         // Parse error response if possible
         String errorMessage = 'Error: ${response.statusCode}';
@@ -279,11 +302,11 @@ class _CreateCompanyProfileScreenState
     );
   }
 
-  Widget buildCompanyLogoWidget() {
+  Widget buildCompanyLogoWidget(bool isProfile) {
     return Column(
       children: [
         GestureDetector(
-          onTap: pickImage,
+          onTap: () => pickImage(isProfile),
           child: CircleAvatar(
             radius: 60,
             backgroundColor: Colors.grey[300],
@@ -309,6 +332,36 @@ class _CreateCompanyProfileScreenState
     );
   }
 
+  Widget buildCompanyProfileWidget(bool isProfile) {
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: () => pickImage(isProfile),
+          child: CircleAvatar(
+            radius: 60,
+            backgroundColor: Colors.grey[300],
+            backgroundImage:
+                companyProfile != null ? FileImage(companyProfile!) : null,
+            child:
+                companyProfile == null
+                    ? Icon(Icons.camera_alt, size: 40, color: Colors.grey[600])
+                    : null,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          companyProfile == null ? "Tap to add logo" : "Tap to change logo",
+          style: TextStyle(color: Colors.grey[600], fontSize: 12),
+        ),
+        if (companyProfile != null)
+          TextButton(
+            onPressed: () => setState(() => companyProfile = null),
+            child: Text("Remove Logo", style: TextStyle(color: Colors.red)),
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -324,7 +377,15 @@ class _CreateCompanyProfileScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: buildCompanyLogoWidget()),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    buildCompanyProfileWidget(true),
+                    buildCompanyLogoWidget(false),
+                  ],
+                ),
+              ),
               SizedBox(height: 20),
               TextFormField(
                 controller: companyNameController,

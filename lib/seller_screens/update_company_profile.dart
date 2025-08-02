@@ -49,6 +49,10 @@ class _UpdateCompanyProfileScreenState
     'Sunday': true,
   };
 
+  // Add these variables
+  String currentAvailabilityStatus = 'Available';
+  bool isUpdatingStatus = false;
+
   @override
   void initState() {
     super.initState();
@@ -328,6 +332,7 @@ class _UpdateCompanyProfileScreenState
           // Assign image URLs from the response
           profilePictureUrl = data['profilePicture'] ?? '';
           companyLogoUrl = data['companyLogo'] ?? '';
+          // Set initial status
           isLoading = false;
         });
       } else {
@@ -379,6 +384,7 @@ class _UpdateCompanyProfileScreenState
       });
 
       // Add form fields
+
       request.fields['CompanyId'] = widget.companyID.toString();
       request.fields['UserId'] = widget.userID.toString();
       request.fields['CompanyName'] = companyNameController.text;
@@ -434,6 +440,43 @@ class _UpdateCompanyProfileScreenState
     } finally {
       setState(() {
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> updateAvailabilityStatus(String status) async {
+    setState(() {
+      isUpdatingStatus = true;
+    });
+
+    try {
+      final response = await http.put(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyProfile/UpdateAvailabilityStatus',
+        ),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'companyId': widget.companyID}),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          currentAvailabilityStatus = status;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Status updated successfully')));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update status')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error updating status: $e')));
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
       });
     }
   }

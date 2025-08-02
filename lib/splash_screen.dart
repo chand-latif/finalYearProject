@@ -2,10 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fix_easy/customer_home.dart';
-import 'seller_home.dart';
+import 'package:fix_easy/customer_screens/customer_home.dart';
+import 'seller_screens/seller_home.dart';
 import 'theme.dart';
 import 'dart:async';
+import 'package:fix_easy/seller_screens/create_company_profile.dart';
 
 class StartupScreen extends StatefulWidget {
   @override
@@ -61,6 +62,7 @@ class _StartupScreenState extends State<StartupScreen>
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final userType = data['data']['userType'];
+      final companyCreated = data['data']['isCompanyProfileExist'];
       // final userId = data['data']['userId'];
 
       if (userType == 'Customer') {
@@ -80,11 +82,24 @@ class _StartupScreenState extends State<StartupScreen>
         //   MaterialPageRoute(builder: (context) => ServiceProviderHome()),
         //   (Route<dynamic> route) => false,
         // );
+        if (companyCreated == false) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => CreateCompanyProfileScreen(
+                    userID: data['data']['userId'],
+                  ),
+            ),
+          );
+        } else {
+          Navigator.pushNamed(context, '/sellerHome');
+        }
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => ServiceProviderHome()),
-        );
+        // Navigator.pushReplacement(
+        //   context,
+        //   MaterialPageRoute(builder: (_) => ServiceProviderHome()),
+        // );
       }
     } else {
       Navigator.pushNamed(context, '/home');

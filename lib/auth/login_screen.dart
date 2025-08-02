@@ -1,11 +1,11 @@
-import 'package:fix_easy/customer_home.dart';
+import 'package:fix_easy/customer_screens/customer_home.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../verfication_OTP.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fix_easy/auth/create_company_profile.dart';
+import 'package:fix_easy/seller_screens/create_company_profile.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

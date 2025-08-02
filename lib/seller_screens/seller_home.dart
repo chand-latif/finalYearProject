@@ -1,6 +1,13 @@
+// import 'dart:nativewrappers/_internal/vm_shared/lib/compact_hash.dart';
+
+import 'package:fix_easy/seller_screens/create_service.dart';
+import 'package:fix_easy/seller_screens/my_services_screen.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 import 'nav_bar_seller.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class ServiceProviderHome extends StatefulWidget {
   const ServiceProviderHome({super.key});
@@ -10,12 +17,20 @@ class ServiceProviderHome extends StatefulWidget {
 }
 
 class _ServiceProviderHomeState extends State<ServiceProviderHome> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchUserInfo();
+  }
+
   // Sample data - Replace with actual data from your API
   int requestedBookings = 5;
   int acceptedBookings = 12;
   int cancelledBookings = 2;
   int completedJobs = 28;
   double rating = 4.8;
+  int? companyId;
 
   final List<Map<String, dynamic>> recentBookings = [
     {
@@ -43,6 +58,35 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       'amount': 3000.0,
     },
   ];
+
+  Future<void> fetchUserInfo() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+
+    if (token == null) {
+      // No token found, navigate to login/home
+      Navigator.pushNamed(context, '/home');
+      return;
+    }
+
+    // Token exists — get user info
+    final response = await http.get(
+      Uri.parse("https://fixease.pk/api/User/GetUserInformation"),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      setState(() {
+        companyId = data['data']['companyId'];
+      });
+    } else {
+      print('api call error');
+    }
+  }
 
   void _onBookingAction(String action, int index) {
     setState(() {
@@ -162,8 +206,99 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 ],
               ),
             ),
-
-            SizedBox(height: 24),
+            Padding(
+              padding: EdgeInsets.fromLTRB(0, 15, 0, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Service Management',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    spacing: 20,
+                    children: [
+                      Column(
+                        children: [
+                          Container(
+                            width: 60, // Added fixed width
+                            height: 60, // Added fixed height
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.add_circle_outline, size: 28),
+                              onPressed: () {
+                                // Navigate to create new service
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => CreateServiceScreen(
+                                          companyID: companyId,
+                                        ),
+                                  ),
+                                );
+                              },
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Create New\nService',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Container(
+                            width: 60, // Added fixed width
+                            height: 60, // Added fixed height
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.teal,
+                            ),
+                            child: IconButton(
+                              icon: Icon(Icons.build_circle_outlined, size: 28),
+                              onPressed: () {
+                                // Navigate to my services
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => MyServicesScreen(
+                                          companyId: companyId,
+                                        ),
+                                  ),
+                                );
+                              },
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'My\nServices',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
 
             // Booking Status Cards
             Text(
@@ -211,7 +346,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
               ],
             ),
 
-            SizedBox(height: 24),
+            SizedBox(height: 20),
 
             // Stats Row
             Row(
@@ -236,7 +371,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
               ],
             ),
 
-            SizedBox(height: 24),
+            SizedBox(width: 24),
 
             // Recent Bookings
             Text(

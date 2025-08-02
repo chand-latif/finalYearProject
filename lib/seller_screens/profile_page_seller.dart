@@ -40,6 +40,8 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
     "Sunday": false,
   };
   AvailabilityStatus? selectedStatus;
+  String currentAvailabilityStatus = 'Available';
+  bool isUpdatingStatus = false;
 
   @override
   void initState() {
@@ -75,6 +77,72 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
     }
   }
 
+  String getStatusText(int? statusCode) {
+    switch (statusCode) {
+      case 1:
+        return 'Available';
+      case 0:
+        return 'Busy';
+      case 2:
+        return 'Away';
+      default:
+        return 'Available';
+    }
+  }
+
+  int getStatusCode(String status) {
+    switch (status) {
+      case 'Available':
+        return 1;
+      case 'Busy':
+        return 0;
+      case 'Away':
+        return 2;
+      default:
+        return 1;
+    }
+  }
+
+  Future<void> updateAvailabilityStatus(String status) async {
+    setState(() {
+      isUpdatingStatus = true;
+    });
+
+    try {
+      final response = await http.put(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyProfile/SetAvailabilityStatus?Status=${getStatusCode(status)}&CompanyId=$companyId',
+        ),
+        headers: {'accept': '*/*'},
+        // body: jsonEncode({
+        //   'companyId': companyId,
+        //   'status': getStatusCode(status),
+        // }),
+      );
+
+      if (response.statusCode == 200) {
+        setState(() {
+          currentAvailabilityStatus = status;
+        });
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Status updated successfully')));
+      } else {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update status')));
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error updating status: $e')));
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
+      });
+    }
+  }
+
   Future<void> fetchCompanyInfo() async {
     final response = await http.get(
       Uri.parse(
@@ -95,6 +163,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
         companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
         companyProfileURL = companyData['profilePicture'] ?? '';
         companyLogoURL = companyData['companyLogo'] ?? '';
+        currentAvailabilityStatus = getStatusText(companyData['status']);
       });
     }
   }
@@ -157,6 +226,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
       }
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     }
@@ -260,35 +330,37 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Availability Status: ',
+                            'Availability Status',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
                           ),
-                          DropdownButton<AvailabilityStatus>(
-                            value: selectedStatus,
-                            items:
-                                AvailabilityStatus.values.map((
-                                  AvailabilityStatus status,
-                                ) {
-                                  return DropdownMenuItem<AvailabilityStatus>(
-                                    value: status,
-                                    child: Text(status.name),
-                                  );
-                                }).toList(),
-                            onChanged: (AvailabilityStatus? newValue) {
-                              setState(() {
-                                selectedStatus = newValue;
-                              });
-                            },
-                          ),
-
-                          // DropdownButton<AvailabilityStatus>(
-                          //   value: selectedStatus,
-                          //   items: [
-
-                          // ], onChanged: onChanged)
+                          isUpdatingStatus
+                              ? SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : DropdownButton<String>(
+                                value: currentAvailabilityStatus,
+                                items:
+                                    ['Available', 'Busy', 'Away'].map((
+                                      String value,
+                                    ) {
+                                      return DropdownMenuItem<String>(
+                                        value: value,
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                onChanged: (String? newValue) {
+                                  if (newValue != null) {
+                                    updateAvailabilityStatus(newValue);
+                                  }
+                                },
+                              ),
                         ],
                       ),
                       Row(
