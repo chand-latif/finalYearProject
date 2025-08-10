@@ -46,6 +46,60 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
     }
   }
 
+  Future<void> deleteService(int serviceId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyServices/DeleteCompanyService?ServiceId=$serviceId',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Service deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        fetchServices(); // Refresh the list
+      } else {
+        throw Exception('Failed to delete service');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting service: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> confirmDelete(int serviceId) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this service?'),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () {
+                Navigator.of(context).pop();
+                deleteService(serviceId);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -117,45 +171,64 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                                     ),
                                   ),
 
-                                  // Edit Button
-                                  IconButton(
-                                    icon: Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder:
-                                              (
-                                                context,
-                                              ) => update_service.UpdateServiceScreen(
-                                                serviceId: service['serviceId'],
-                                                companyId: widget.companyId,
-                                                initialData: {
-                                                  'description':
-                                                      service['serviceDescription'],
-                                                  'contactNumber':
-                                                      service['contactNumber'],
-                                                  'serviceTags':
-                                                      service['serviceTags'],
-                                                  'providerName':
-                                                      service['providerName'],
-                                                  'address': service['address'],
-                                                  'categoryName':
-                                                      service['categoryName'],
-                                                  'serviceType':
-                                                      service['serviceType'],
-                                                  'serviceImage':
-                                                      service['serviceImage'],
-                                                },
-                                              ),
+                                  // Edit and Delete Buttons
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
                                         ),
-                                      ).then((value) {
-                                        if (value == true) {
-                                          // Refresh the services list if update was successful
-                                          fetchServices();
-                                        }
-                                      });
-                                    },
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder:
+                                                  (
+                                                    context,
+                                                  ) => update_service.UpdateServiceScreen(
+                                                    serviceId:
+                                                        service['serviceId'],
+                                                    companyId: widget.companyId,
+                                                    initialData: {
+                                                      'description':
+                                                          service['serviceDescription'],
+                                                      'contactNumber':
+                                                          service['contactNumber'],
+                                                      'serviceTags':
+                                                          service['serviceTags'],
+                                                      'providerName':
+                                                          service['providerName'],
+                                                      'address':
+                                                          service['address'],
+                                                      'categoryName':
+                                                          service['categoryName'],
+                                                      'serviceType':
+                                                          service['serviceType'],
+                                                      'serviceImage':
+                                                          service['serviceImage'],
+                                                    },
+                                                  ),
+                                            ),
+                                          ).then((value) {
+                                            if (value == true) {
+                                              // Refresh the services list if update was successful
+                                              fetchServices();
+                                            }
+                                          });
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed:
+                                            () => confirmDelete(
+                                              service['serviceId'],
+                                            ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

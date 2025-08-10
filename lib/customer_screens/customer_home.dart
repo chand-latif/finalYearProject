@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'nav_bar_customer.dart';
 import 'package:fix_easy/theme.dart';
+import 'category_services_screen.dart';
+import 'all_services_screen.dart';
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -45,7 +47,7 @@ class _CustomerHomeState extends State<CustomerHome> {
       'route': '/ac_repair',
     },
     {
-      'name': 'Cleaning',
+      'name': 'Cleaner',
       'icon': Icons.cleaning_services,
       'color': Colors.purple,
       'route': '/cleaning',
@@ -236,6 +238,35 @@ class _CustomerHomeState extends State<CustomerHome> {
                 },
               ),
 
+              SizedBox(height: 24),
+
+              // All Services Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AllServicesScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    'View All Services',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+
               SizedBox(height: 20),
             ],
           ),
@@ -252,7 +283,41 @@ class _CustomerHomeState extends State<CustomerHome> {
     String route,
   ) {
     return GestureDetector(
-      // onTap: () => _onServiceTap(title, route),
+      onTap: () {
+        // Get category ID from name
+        int? categoryId;
+        switch (title) {
+          case 'Plumber':
+            categoryId = 9;
+            break;
+          case 'Painter':
+            categoryId = 10;
+            break;
+          case 'Electrician':
+            categoryId = 11;
+            break;
+          case 'AC Repair':
+            categoryId = 12;
+            break;
+          case 'Home Cleaner':
+            categoryId = 13;
+            break;
+          case 'Carpenter':
+            categoryId = 14;
+            break;
+        }
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => CategoryServicesScreen(
+                  categoryId: categoryId!,
+                  categoryName: title,
+                ),
+          ),
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,

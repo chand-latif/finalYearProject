@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -131,15 +132,27 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
+      var responseData = jsonDecode(responseBody);
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Service created successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.pop(context); // Go back to previous screen
+        if (responseData['statusCode'] == 200) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Service created successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('service of this category already exists!'),
+              backgroundColor: const Color.fromARGB(255, 222, 84, 74),
+            ),
+          );
+        }
+
+        // Go back to previous screen
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

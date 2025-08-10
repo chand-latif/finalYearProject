@@ -104,6 +104,8 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
   }
 
   Future<void> updateAvailabilityStatus(String status) async {
+    if (!mounted) return;
+
     setState(() {
       isUpdatingStatus = true;
     });
@@ -114,11 +116,9 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
           'https://fixease.pk/api/CompanyProfile/SetAvailabilityStatus?Status=${getStatusCode(status)}&CompanyId=$companyId',
         ),
         headers: {'accept': '*/*'},
-        // body: jsonEncode({
-        //   'companyId': companyId,
-        //   'status': getStatusCode(status),
-        // }),
       );
+
+      if (!mounted) return;
 
       if (response.statusCode == 200) {
         setState(() {
@@ -133,13 +133,16 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
         ).showSnackBar(SnackBar(content: Text('Failed to update status')));
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error updating status: $e')));
     } finally {
-      setState(() {
-        isUpdatingStatus = false;
-      });
+      if (mounted) {
+        setState(() {
+          isUpdatingStatus = false;
+        });
+      }
     }
   }
 
@@ -157,9 +160,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
       setState(() {
         companyAddress = companyData['companyAddress'] ?? '';
         companyName = companyData['companyName'] ?? '';
-        companyPhoneNumber =
-            companyData['phoneNumber'] ??
-            ''; // Fixed typo 'phoneNumer' to 'phoneNumber'
+        companyPhoneNumber = companyData['phoneNumber'] ?? '';
         companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
         companyProfileURL = companyData['profilePicture'] ?? '';
         companyLogoURL = companyData['companyLogo'] ?? '';
@@ -226,7 +227,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
       }
     } catch (e) {
       ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
+        // ignore: use_build_context_synchronous  ly, use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Network error: $e')));
     }
@@ -298,21 +299,21 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
                   padding: const EdgeInsets.all(10.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
                         "👤 Name: $userName",
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 17),
                       ),
                       SizedBox(height: 10),
                       Text(
                         "📧 Email: $userEmail",
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 17),
                       ),
                       SizedBox(height: 10),
                       Text(
                         "📅 Joining Date: $joiningDate",
-                        style: TextStyle(fontSize: 18),
+                        style: TextStyle(fontSize: 17),
                       ),
                     ],
                   ),
