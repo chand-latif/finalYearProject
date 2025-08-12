@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fix_easy/customer_screens/customer_home.dart';
-import 'seller_screens/seller_home.dart';
+// import 'seller_screens/seller_home.dart';
 import 'theme.dart';
 import 'dart:async';
 import 'package:fix_easy/seller_screens/create_company_profile.dart';

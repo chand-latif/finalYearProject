@@ -86,7 +86,8 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+
                   children: [
                     Text("👤 Name: $userName", style: TextStyle(fontSize: 18)),
                     SizedBox(height: 10),

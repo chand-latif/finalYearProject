@@ -299,7 +299,7 @@ class _CustomerHomeState extends State<CustomerHome> {
           case 'AC Repair':
             categoryId = 12;
             break;
-          case 'Home Cleaner':
+          case 'Cleaner':
             categoryId = 13;
             break;
           case 'Carpenter':

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
 class UpdateServiceScreen extends StatefulWidget {
   final int serviceId;
