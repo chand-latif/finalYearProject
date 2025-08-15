@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
+import 'book_service_screen.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> service;
@@ -184,7 +185,15 @@ class ServiceDetailsScreen extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement booking functionality
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => BookServiceScreen(
+                            serviceId: service['serviceId'],
+                          ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,

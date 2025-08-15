@@ -46,10 +46,12 @@ class _CategoryServicesScreenState extends State<CategoryServicesScreen> {
         throw Exception('Failed to load services');
       }
     } catch (e) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading services: $e')));
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading services: $e')));
+      }
     }
   }
 

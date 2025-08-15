@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme.dart';
 import 'package:http/http.dart' as http;
 import '../verfication_otp.dart';
@@ -23,9 +24,79 @@ final TextEditingController confirmPasswordController = TextEditingController();
 
 class _SignUpState extends State<SignUp> {
   bool isLoading = false;
-
   bool isObscurePassword = true;
   bool isObscureConfirmPassword = true;
+
+  // Add validation state variables
+  String? emailError;
+  String? phoneError;
+  String? passwordError;
+  String? nameError;
+
+  // Email validation
+  void validateEmail(String email) {
+    RegExp emailRegex = RegExp(r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+');
+    setState(() {
+      if (email.isEmpty) {
+        emailError = 'Email is required';
+      } else if (!emailRegex.hasMatch(email)) {
+        emailError = 'Enter a valid email';
+      } else {
+        emailError = null;
+      }
+    });
+  }
+
+  // Phone validation
+  void validatePhone(String phone) {
+    setState(() {
+      if (phone.isEmpty) {
+        phoneError = 'Phone number is required';
+      } else if (phone.length != 11) {
+        phoneError = 'Phone number must be 11 digits';
+      } else {
+        phoneError = null;
+      }
+    });
+  }
+
+  // Password validation
+  void validatePassword(String password) {
+    setState(() {
+      if (password.isEmpty) {
+        passwordError = 'Password is required';
+      } else if (password.length < 6) {
+        passwordError = 'Password must be at least 6 characters';
+      } else {
+        passwordError = null;
+      }
+    });
+  }
+
+  // Name validation
+  void validateName(String name) {
+    setState(() {
+      if (name.isEmpty) {
+        nameError = 'Name is required';
+      } else {
+        nameError = null;
+      }
+    });
+  }
+
+  bool isFormValid() {
+    validateName(nameController.text);
+    validateEmail(emailController.text);
+    validatePhone(phoneController.text);
+    validatePassword(passwordController.text);
+
+    return nameError == null &&
+        emailError == null &&
+        phoneError == null &&
+        passwordError == null &&
+        passwordController.text == confirmPasswordController.text;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -58,6 +129,7 @@ class _SignUpState extends State<SignUp> {
                       Text('Full Name'),
                       TextField(
                         controller: nameController,
+                        onChanged: validateName,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -78,6 +150,7 @@ class _SignUpState extends State<SignUp> {
                             vertical: 0,
                             horizontal: 10,
                           ),
+                          errorText: nameError,
                         ),
                       ),
                     ],
@@ -90,6 +163,8 @@ class _SignUpState extends State<SignUp> {
                       Text('Email Address'),
                       TextField(
                         controller: emailController,
+                        onChanged: validateEmail,
+                        keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -110,6 +185,7 @@ class _SignUpState extends State<SignUp> {
                             vertical: 0,
                             horizontal: 10,
                           ),
+                          errorText: emailError,
                         ),
                       ),
                     ],
@@ -122,6 +198,12 @@ class _SignUpState extends State<SignUp> {
                       Text('Phone Number'),
                       TextField(
                         controller: phoneController,
+                        onChanged: validatePhone,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -137,11 +219,12 @@ class _SignUpState extends State<SignUp> {
                               width: 1,
                             ),
                           ),
-                          hintText: 'Enter your phone number',
+                          hintText: 'Enter your 11-digit number',
                           contentPadding: EdgeInsets.symmetric(
                             vertical: 0,
                             horizontal: 10,
                           ),
+                          errorText: phoneError,
                         ),
                       ),
                     ],
@@ -154,6 +237,7 @@ class _SignUpState extends State<SignUp> {
                       Text('Password'),
                       TextField(
                         controller: passwordController,
+                        onChanged: validatePassword,
                         obscureText: isObscurePassword,
                         decoration: InputDecoration(
                           suffixIcon: IconButton(
@@ -187,6 +271,7 @@ class _SignUpState extends State<SignUp> {
                             horizontal: 10,
                           ),
                           hintText: 'Enter your password',
+                          errorText: passwordError,
                         ),
                       ),
                     ],
@@ -253,8 +338,7 @@ class _SignUpState extends State<SignUp> {
                       isLoading
                           ? null
                           : () async {
-                            if (passwordController.text ==
-                                confirmPasswordController.text) {
+                            if (isFormValid()) {
                               setState(() {
                                 isLoading = true;
                               });
@@ -264,12 +348,6 @@ class _SignUpState extends State<SignUp> {
                               setState(() {
                                 isLoading = false;
                               });
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text("Passwords do not match"),
-                                ),
-                              );
                             }
                           },
                   child:

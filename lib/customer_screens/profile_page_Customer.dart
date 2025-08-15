@@ -42,11 +42,13 @@ class _ProfilePageState extends State<ProfilePage> {
       final data = jsonDecode(response.body);
       final userData = data['data'];
 
-      setState(() {
-        userName = userData['userName'] ?? '';
-        userEmail = userData['userEmail'] ?? '';
-        joiningDate = userData['createdDate']?.split('T')[0] ?? '';
-      });
+      if (mounted) {
+        setState(() {
+          userName = userData['userName'] ?? '';
+          userEmail = userData['userEmail'] ?? '';
+          joiningDate = userData['createdDate']?.split('T')[0] ?? '';
+        });
+      }
     } else {
       print("Failed to fetch user info.");
     }

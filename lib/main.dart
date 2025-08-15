@@ -9,6 +9,8 @@ import 'dart:io';
 import 'seller_screens/seller_home.dart';
 import 'splash_screen.dart';
 import 'customer_screens/profile_page_Customer.dart';
+import 'customer_screens/my_bookings_screen.dart';
+import 'seller_screens/booking_requests_screen.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -47,6 +49,8 @@ class MyApp extends StatelessWidget {
         '/sellerHome': (context) => ServiceProviderHome(),
         '/customerProfile': (context) => ProfilePage(),
         '/sellerProfile': (context) => ProfilePageSeller(),
+        '/myBookings': (context) => MyBookingsScreen(),
+        '/sellerBookingRequests': (context) => BookingRequestsScreen(),
       },
       title: 'FYP',
 

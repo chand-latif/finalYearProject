@@ -26,7 +26,7 @@ class _NavBarSellerState extends State<NavBarSeller>
         Navigator.pushNamed(context, "/sellerHome");
         break;
       case 1:
-        Navigator.pushNamed(context, "/sellerHome");
+        Navigator.pushNamed(context, "/sellerBookingRequests");
         break;
       case 2:
         Navigator.pushNamed(context, "/sellerProfile");

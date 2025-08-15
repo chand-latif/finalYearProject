@@ -206,6 +206,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       Text('Email'),
                       SizedBox(height: 8),
                       TextFormField(
+                        keyboardType: TextInputType.emailAddress,
                         controller: emailController,
                         decoration: InputDecoration(
                           hintText: 'Enter your email',
@@ -305,45 +306,45 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                       ),
                       SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushNamed(context, '/customerHome');
-                          },
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/google.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                              SizedBox(width: 10),
-                              Text('Login with Google'),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {},
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                'assets/facebook.png',
-                                width: 20,
-                                height: 20,
-                              ),
-                              SizedBox(width: 10),
-                              Text('Login with Facebook'),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // SizedBox(
+                      //   width: double.infinity,
+                      //   child: ElevatedButton(
+                      //     onPressed: () {
+                      //       Navigator.pushNamed(context, '/customerHome');
+                      //     },
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: [
+                      //         Image.asset(
+                      //           'assets/google.png',
+                      //           width: 20,
+                      //           height: 20,
+                      //         ),
+                      //         SizedBox(width: 10),
+                      //         Text('Login with Google'),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 10),
+                      // SizedBox(
+                      //   width: double.infinity,
+                      //   child: ElevatedButton(
+                      //     onPressed: () {},
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.center,
+                      //       children: [
+                      //         Image.asset(
+                      //           'assets/facebook.png',
+                      //           width: 20,
+                      //           height: 20,
+                      //         ),
+                      //         SizedBox(width: 10),
+                      //         Text('Login with Facebook'),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

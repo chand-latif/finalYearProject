@@ -63,15 +63,17 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
       final data = jsonDecode(response.body);
       final userData = data['data'];
 
-      setState(() {
-        userName = userData['userName'] ?? '';
-        userEmail = userData['userEmail'] ?? '';
-        joiningDate = userData['createdDate']?.split('T')[0] ?? '';
-        companyId = userData['companyId'];
-        userId = userData['userId'];
-      });
-      fetchCompanyInfo();
-      fetchWorkingHours();
+      if (mounted) {
+        setState(() {
+          userName = userData['userName'] ?? '';
+          userEmail = userData['userEmail'] ?? '';
+          joiningDate = userData['createdDate']?.split('T')[0] ?? '';
+          companyId = userData['companyId'];
+          userId = userData['userId'];
+        });
+        fetchCompanyInfo();
+        fetchWorkingHours();
+      }
     } else {
       print("Failed to fetch user info.");
     }
@@ -157,15 +159,17 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
       final data = jsonDecode(response.body);
       final companyData = data['data'];
 
-      setState(() {
-        companyAddress = companyData['companyAddress'] ?? '';
-        companyName = companyData['companyName'] ?? '';
-        companyPhoneNumber = companyData['phoneNumber'] ?? '';
-        companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
-        companyProfileURL = companyData['profilePicture'] ?? '';
-        companyLogoURL = companyData['companyLogo'] ?? '';
-        currentAvailabilityStatus = getStatusText(companyData['status']);
-      });
+      if (mounted) {
+        setState(() {
+          companyAddress = companyData['companyAddress'] ?? '';
+          companyName = companyData['companyName'] ?? '';
+          companyPhoneNumber = companyData['phoneNumber'] ?? '';
+          companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
+          companyProfileURL = companyData['profilePicture'] ?? '';
+          companyLogoURL = companyData['companyLogo'] ?? '';
+          currentAvailabilityStatus = getStatusText(companyData['status']);
+        });
+      }
     }
   }
 
@@ -222,14 +226,16 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
         });
       } else {
         ScaffoldMessenger.of(
+          // ignore: use_build_context_synchronously
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to load working hours')));
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronous  ly, use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text('Network error: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Network error: $e')));
+      }
     }
   }
 
