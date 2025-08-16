@@ -37,10 +37,12 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
         });
       }
     } catch (e) {
-      setState(() => isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error loading services: $e')));
+      if (mounted) {
+        setState(() => isLoading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading services: $e')));
+      }
     }
   }
 

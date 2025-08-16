@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme.dart';
 import 'book_service_screen.dart';
+import 'service_reviews_screen.dart';
 
 class ServiceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> service;
@@ -83,26 +84,6 @@ class ServiceDetailsScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
 
-                  SizedBox(height: 8),
-
-                  // Rating
-                  Row(
-                    children: [
-                      Icon(Icons.star, color: Colors.amber, size: 20),
-                      Text(
-                        ' ${(service['serviceRating']?['averageRating'] ?? 0).toStringAsFixed(1)}',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        ' (${service['serviceRating']?['totalRatings'] ?? 0} ratings)',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-
                   SizedBox(height: 24),
 
                   // Description
@@ -166,6 +147,103 @@ class ServiceDetailsScreen extends StatelessWidget {
                               .toList(),
                     ),
                   ],
+
+                  // Ratings & Reviews Section
+                  SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Ratings & Reviews',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if ((service['serviceReview'] as List).length > 1)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => ServiceReviewsScreen(
+                                      reviews: service['serviceReview'],
+                                      averageRating:
+                                          service['serviceRating']['averageRating'] ??
+                                          0,
+                                      totalRatings:
+                                          service['serviceRating']['totalRatings'] ??
+                                          0,
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Text('See all'),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 8),
+                  // Rating Summary
+                  Row(
+                    children: [
+                      Text(
+                        '${(service['serviceRating']?['averageRating'] ?? 0).toStringAsFixed(1)}',
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: List.generate(5, (index) {
+                              return Icon(
+                                index <
+                                        (service['serviceRating']?['averageRating'] ??
+                                            0)
+                                    ? Icons.star
+                                    : Icons.star_border,
+                                color: Colors.amber,
+                                size: 20,
+                              );
+                            }),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            '${service['serviceRating']?['totalRatings'] ?? 0} ratings',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+
+                  // Show first review if exists
+                  if ((service['serviceReview'] as List).isNotEmpty) ...[
+                    SizedBox(height: 16),
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            service['serviceReview'][0]['userName'] ??
+                                'Anonymous',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          Text(service['serviceReview'][0]['comment'] ?? ''),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -185,6 +263,7 @@ class ServiceDetailsScreen extends StatelessWidget {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {
+                  // Navigator.push(context, route)
                   Navigator.push(
                     context,
                     MaterialPageRoute(

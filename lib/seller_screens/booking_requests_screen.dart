@@ -4,6 +4,7 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../widgets/image_viewer.dart';
 
 class BookingRequestsScreen extends StatefulWidget {
   const BookingRequestsScreen({Key? key}) : super(key: key);
@@ -15,6 +16,9 @@ class BookingRequestsScreen extends StatefulWidget {
 class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
   bool isLoading = true;
   List<Map<String, dynamic>> bookings = [];
+  bool isUpdatingStatus = false;
+  int? updatingBookingId;
+  String? currentAction; // Track which action is being performed
 
   @override
   void initState() {
@@ -75,6 +79,12 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
   }
 
   Future<void> updateBookingStatus(int bookingId, String status) async {
+    setState(() {
+      isUpdatingStatus = true;
+      updatingBookingId = bookingId;
+      currentAction = status;
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -111,10 +121,21 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
+        updatingBookingId = null;
+        currentAction = null;
+      });
     }
   }
 
   Future<void> markWorkCompleted(int bookingId) async {
+    setState(() {
+      isUpdatingStatus = true;
+      updatingBookingId = bookingId;
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -150,6 +171,11 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
+        updatingBookingId = null;
+      });
     }
   }
 
@@ -186,38 +212,40 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                   width: double.infinity,
                                   child:
                                       booking['issuedImages'].length == 1
-                                          ? Image.network(
-                                            'https://fixease.pk${booking['issuedImages'][0]}',
-                                            fit: BoxFit.cover,
-                                            width: double.infinity,
-                                            errorBuilder:
-                                                (_, __, ___) => Container(
-                                                  width: double.infinity,
-                                                  color: Colors.grey[300],
-                                                  child: Icon(Icons.error),
+                                          ? GestureDetector(
+                                            onTap:
+                                                () => showFullScreenImage(
+                                                  context,
+                                                  booking['issuedImages'][0],
+                                                  isNetworkImage: false,
                                                 ),
+                                            child: Image.network(
+                                              'https://fixease.pk${booking['issuedImages'][0]}',
+                                              fit: BoxFit.cover,
+                                              width: double.infinity,
+                                            ),
                                           )
                                           : ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             itemCount:
                                                 booking['issuedImages'].length,
                                             itemBuilder: (context, imageIndex) {
-                                              return Padding(
-                                                padding: EdgeInsets.only(
-                                                  right: 8,
-                                                ),
-                                                child: Image.network(
-                                                  'https://fixease.pk${booking['issuedImages'][imageIndex]}',
-                                                  fit: BoxFit.cover,
-                                                  width: 200,
-                                                  errorBuilder:
-                                                      (_, __, ___) => Container(
-                                                        width: 200,
-                                                        color: Colors.grey[300],
-                                                        child: Icon(
-                                                          Icons.error,
-                                                        ),
-                                                      ),
+                                              return GestureDetector(
+                                                onTap:
+                                                    () => showFullScreenImage(
+                                                      context,
+                                                      booking['issuedImages'][imageIndex],
+                                                      isNetworkImage: false,
+                                                    ),
+                                                child: Padding(
+                                                  padding: EdgeInsets.only(
+                                                    right: 8,
+                                                  ),
+                                                  child: Image.network(
+                                                    'https://fixease.pk${booking['issuedImages'][imageIndex]}',
+                                                    fit: BoxFit.cover,
+                                                    width: 200,
+                                                  ),
                                                 ),
                                               );
                                             },
@@ -337,11 +365,33 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 onPressed:
-                                                    () => updateBookingStatus(
-                                                      booking['bookingId'],
-                                                      'Reject',
-                                                    ),
-                                                child: Text('Reject'),
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? null
+                                                        : () =>
+                                                            updateBookingStatus(
+                                                              booking['bookingId'],
+                                                              'Reject',
+                                                            ),
+                                                child:
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId'] &&
+                                                            currentAction ==
+                                                                'Reject'
+                                                        ? SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child: CircularProgressIndicator(
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                  Color
+                                                                >(Colors.white),
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                        : Text('Reject'),
                                               ),
                                             ),
                                             SizedBox(width: 8),
@@ -352,11 +402,33 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 onPressed:
-                                                    () => updateBookingStatus(
-                                                      booking['bookingId'],
-                                                      'Accept',
-                                                    ),
-                                                child: Text('Accept'),
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? null
+                                                        : () =>
+                                                            updateBookingStatus(
+                                                              booking['bookingId'],
+                                                              'Accept',
+                                                            ),
+                                                child:
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId'] &&
+                                                            currentAction ==
+                                                                'Accept'
+                                                        ? SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child: CircularProgressIndicator(
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                  Color
+                                                                >(Colors.white),
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                        : Text('Accept'),
                                               ),
                                             ),
                                           ],
@@ -374,12 +446,31 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                               foregroundColor: Colors.white,
                                             ),
                                             onPressed:
-                                                () => markWorkCompleted(
-                                                  booking['bookingId'],
-                                                ),
-                                            child: Text(
-                                              'Mark Work as Completed',
-                                            ),
+                                                isUpdatingStatus &&
+                                                        updatingBookingId ==
+                                                            booking['bookingId']
+                                                    ? null
+                                                    : () => markWorkCompleted(
+                                                      booking['bookingId'],
+                                                    ),
+                                            child:
+                                                isUpdatingStatus &&
+                                                        updatingBookingId ==
+                                                            booking['bookingId']
+                                                    ? SizedBox(
+                                                      height: 20,
+                                                      width: 20,
+                                                      child: CircularProgressIndicator(
+                                                        valueColor:
+                                                            AlwaysStoppedAnimation<
+                                                              Color
+                                                            >(Colors.white),
+                                                        strokeWidth: 2,
+                                                      ),
+                                                    )
+                                                    : Text(
+                                                      'Mark Work as Completed',
+                                                    ),
                                           ),
                                         ),
                                       ),

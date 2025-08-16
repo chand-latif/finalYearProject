@@ -79,16 +79,15 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       var responseBody = await response.stream.bytesToString();
       var responseData = jsonDecode(responseBody);
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 200) {
+        Navigator.pushNamed(context, '/myBookings');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              responseData['message'] ?? 'Booking created successfully',
-            ),
+            content: Text('Booking created successfully'),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context, true);
+        // Navigator.pop(context, true);
       } else {
         throw Exception(responseData['message'] ?? 'Failed to create booking');
       }

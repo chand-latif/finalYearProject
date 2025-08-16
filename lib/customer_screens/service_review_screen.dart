@@ -20,6 +20,10 @@ class _ServiceReviewScreenState extends State<ServiceReviewScreen> {
   bool isSubmitting = false;
 
   Future<void> submitRating() async {
+    if (rating < 1 || rating > 5) {
+      throw Exception('Rating must be between 1 and 5');
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -35,21 +39,29 @@ class _ServiceReviewScreenState extends State<ServiceReviewScreen> {
         },
         body: jsonEncode({
           'serviceId': widget.serviceId,
-          'ratingValue': rating.toInt(),
+          'rating': rating.toInt(), // Ensure it's an integer between 1-5
         }),
       );
 
+      print('Rating Response: ${response.body}'); // Debug log
+
       if (response.statusCode != 200) {
-        throw Exception(' ${response.statusCode}Failed to submit rating');
+        throw Exception('Failed to submit rating');
+      }
+
+      final data = json.decode(response.body);
+      if (!data['succeeded']) {
+        throw Exception(data['message'] ?? 'Rating submission failed');
       }
     } catch (e) {
+      print('Rating Error: $e'); // Debug log
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error  submitting rating: $e'),
+          content: Text('Error submitting rating: $e'),
           backgroundColor: Colors.red,
         ),
       );
-      throw e; // Re-throw to handle in the main submit function
+      throw e;
     }
   }
 
@@ -88,28 +100,38 @@ class _ServiceReviewScreenState extends State<ServiceReviewScreen> {
   }
 
   Future<void> handleSubmission() async {
+    if (rating == 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please select a rating before submitting')),
+      );
+      return;
+    }
+
     setState(() => isSubmitting = true);
 
     try {
-      // Submit rating if provided
-      if (rating > 0) {
-        await submitRating();
-      }
+      // Always submit rating first
+      await submitRating();
 
-      // Submit review if provided
+      // Only submit review if there's a comment
       if (commentController.text.isNotEmpty) {
         await submitComment();
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Thank you for your feedback!'),
+          content: Text('Rating submitted successfully!'),
           backgroundColor: Colors.green,
         ),
       );
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
-      // Error handling already done in individual functions
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit feedback. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
     } finally {
       setState(() => isSubmitting = false);
     }
@@ -135,24 +157,23 @@ class _ServiceReviewScreenState extends State<ServiceReviewScreen> {
             SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children:
-                  List.generate(6, (index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          rating = index.toDouble();
-                        });
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        child: Icon(
-                          index <= rating ? Icons.star : Icons.star_border,
-                          size: 40,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    );
-                  }).skip(1).toList(), // Skip 0 to start from 1
+              children: List.generate(5, (index) {
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      rating = (index + 1).toDouble(); // Start from 1, not 0
+                    });
+                  },
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    child: Icon(
+                      index < rating ? Icons.star : Icons.star_border,
+                      size: 40,
+                      color: Colors.amber,
+                    ),
+                  ),
+                );
+              }),
             ),
             SizedBox(height: 20),
             Text(

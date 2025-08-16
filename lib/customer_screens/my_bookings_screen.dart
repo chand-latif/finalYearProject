@@ -4,6 +4,7 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'service_review_screen.dart';
+import '../widgets/image_viewer.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);
@@ -16,6 +17,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   bool isLoading = true;
   List<Map<String, dynamic>> bookings = [];
   String? selectedStatus; // For filter dropdown
+  bool isUpdatingStatus = false;
+  int? updatingBookingId;
+  String? currentAction;
 
   @override
   void initState() {
@@ -65,6 +69,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
   }
 
   Future<void> confirmBooking(int bookingId, bool isAgree) async {
+    setState(() {
+      isUpdatingStatus = true;
+      updatingBookingId = bookingId;
+      currentAction = isAgree ? 'agree' : 'cancel';
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -98,10 +108,21 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
+        updatingBookingId = null;
+        currentAction = null;
+      });
     }
   }
 
-  Future<void> approveWorkCompletion(int bookingId) async {
+  Future<void> approveWorkCompletion(Map<String, dynamic> booking) async {
+    setState(() {
+      isUpdatingStatus = true;
+      updatingBookingId = booking['bookingId'];
+    });
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -110,7 +131,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
       final response = await http.put(
         Uri.parse(
-          'https://fixease.pk/api/BookingService/FinishedBooking?BookingId=$bookingId',
+          'https://fixease.pk/api/BookingService/FinishedBooking?BookingId=${booking['bookingId']}',
         ),
         headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
       );
@@ -125,15 +146,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             ),
           );
 
-          // Navigate to review screen
+          // Navigate to review screen with correct serviceId
           Navigator.push(
             context,
             MaterialPageRoute(
               builder:
                   (context) => ServiceReviewScreen(
                     serviceId:
-                        bookingId, // Replace with actual service ID if different
-                    // This will be 0 for new reviews
+                        booking['serviceId'], // Use serviceId instead of bookingId
                   ),
             ),
           );
@@ -149,6 +169,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
       );
+    } finally {
+      setState(() {
+        isUpdatingStatus = false;
+        updatingBookingId = null;
+      });
     }
   }
 
@@ -173,7 +198,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        fetchBookings(); // Refresh the list
+        // Pass the current filter status when refreshing
+        fetchBookings(selectedStatus);
       } else {
         throw Exception('Failed to delete booking');
       }
@@ -268,18 +294,25 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             children: [
                               // Add service provider image
                               if (booking['profilePicture'] != null)
-                                Container(
-                                  height: 120,
-                                  width: double.infinity,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(4),
-                                    ),
-                                    image: DecorationImage(
-                                      image: NetworkImage(
-                                        'https://fixease.pk${booking['profilePicture']}',
+                                GestureDetector(
+                                  onTap: () => showFullScreenImage(
+                                    context, 
+                                    booking['profilePicture'],
+                                    isNetworkImage: false,
+                                  ),
+                                  child: Container(
+                                    height: 120,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(4),
                                       ),
-                                      fit: BoxFit.cover,
+                                      image: DecorationImage(
+                                        image: NetworkImage(
+                                          'https://fixease.pk${booking['profilePicture']}',
+                                        ),
+                                        fit: BoxFit.cover,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -425,11 +458,32 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 onPressed:
-                                                    () => confirmBooking(
-                                                      booking['bookingId'],
-                                                      false,
-                                                    ),
-                                                child: Text('Disagree'),
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? null
+                                                        : () => confirmBooking(
+                                                          booking['bookingId'],
+                                                          false,
+                                                        ),
+                                                child:
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId'] &&
+                                                            currentAction ==
+                                                                'cancel'
+                                                        ? SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child: CircularProgressIndicator(
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                  Color
+                                                                >(Colors.white),
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                        : Text('Cancel'),
                                               ),
                                             ),
                                             SizedBox(width: 8),
@@ -440,11 +494,32 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 onPressed:
-                                                    () => confirmBooking(
-                                                      booking['bookingId'],
-                                                      true,
-                                                    ),
-                                                child: Text('Agree'),
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? null
+                                                        : () => confirmBooking(
+                                                          booking['bookingId'],
+                                                          true,
+                                                        ),
+                                                child:
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId'] &&
+                                                            currentAction ==
+                                                                'agree'
+                                                        ? SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child: CircularProgressIndicator(
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                  Color
+                                                                >(Colors.white),
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                        : Text('Confirm'),
                                               ),
                                             ),
                                           ],
@@ -464,12 +539,32 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                                   foregroundColor: Colors.white,
                                                 ),
                                                 onPressed:
-                                                    () => approveWorkCompletion(
-                                                      booking['bookingId'],
-                                                    ),
-                                                child: Text(
-                                                  'Approve Work Completion',
-                                                ),
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? null
+                                                        : () =>
+                                                            approveWorkCompletion(
+                                                              booking,
+                                                            ),
+                                                child:
+                                                    isUpdatingStatus &&
+                                                            updatingBookingId ==
+                                                                booking['bookingId']
+                                                        ? SizedBox(
+                                                          height: 20,
+                                                          width: 20,
+                                                          child: CircularProgressIndicator(
+                                                            valueColor:
+                                                                AlwaysStoppedAnimation<
+                                                                  Color
+                                                                >(Colors.white),
+                                                            strokeWidth: 2,
+                                                          ),
+                                                        )
+                                                        : Text(
+                                                          'Approve Work Completion',
+                                                        ),
                                               ),
                                             ),
                                           ],
