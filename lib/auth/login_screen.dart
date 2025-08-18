@@ -1,4 +1,4 @@
-import 'package:fix_easy/customer_screens/customer_home.dart';
+import 'package:fix_easy/customer_screens/customer_home.dart' as customer_home;
 import 'package:fix_easy/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -50,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (userType == 'Customer') {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => CustomerHome()),
+          MaterialPageRoute(builder: (context) => customer_home.CustomerHome()),
         );
       } else if (userType == 'Seller') {
         if (companyCreated == false) {

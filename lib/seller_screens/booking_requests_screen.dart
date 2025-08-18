@@ -4,7 +4,7 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import '../widgets/image_viewer.dart';
+import 'package:fix_easy/widgets/image_viewer.dart';
 
 class BookingRequestsScreen extends StatefulWidget {
   const BookingRequestsScreen({Key? key}) : super(key: key);
@@ -212,40 +212,38 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                   width: double.infinity,
                                   child:
                                       booking['issuedImages'].length == 1
-                                          ? GestureDetector(
-                                            onTap:
-                                                () => showFullScreenImage(
-                                                  context,
-                                                  booking['issuedImages'][0],
-                                                  isNetworkImage: false,
+                                          ? Image.network(
+                                            'https://fixease.pk${booking['issuedImages'][0]}',
+                                            fit: BoxFit.cover,
+                                            width: double.infinity,
+                                            errorBuilder:
+                                                (_, __, ___) => Container(
+                                                  width: double.infinity,
+                                                  color: Colors.grey[300],
+                                                  child: Icon(Icons.error),
                                                 ),
-                                            child: Image.network(
-                                              'https://fixease.pk${booking['issuedImages'][0]}',
-                                              fit: BoxFit.cover,
-                                              width: double.infinity,
-                                            ),
                                           )
                                           : ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             itemCount:
                                                 booking['issuedImages'].length,
                                             itemBuilder: (context, imageIndex) {
-                                              return GestureDetector(
-                                                onTap:
-                                                    () => showFullScreenImage(
-                                                      context,
-                                                      booking['issuedImages'][imageIndex],
-                                                      isNetworkImage: false,
-                                                    ),
-                                                child: Padding(
-                                                  padding: EdgeInsets.only(
-                                                    right: 8,
-                                                  ),
-                                                  child: Image.network(
-                                                    'https://fixease.pk${booking['issuedImages'][imageIndex]}',
-                                                    fit: BoxFit.cover,
-                                                    width: 200,
-                                                  ),
+                                              return Padding(
+                                                padding: EdgeInsets.only(
+                                                  right: 8,
+                                                ),
+                                                child: Image.network(
+                                                  'https://fixease.pk${booking['issuedImages'][imageIndex]}',
+                                                  fit: BoxFit.cover,
+                                                  width: 200,
+                                                  errorBuilder:
+                                                      (_, __, ___) => Container(
+                                                        width: 200,
+                                                        color: Colors.grey[300],
+                                                        child: Icon(
+                                                          Icons.error,
+                                                        ),
+                                                      ),
                                                 ),
                                               );
                                             },

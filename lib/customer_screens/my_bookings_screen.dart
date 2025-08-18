@@ -4,7 +4,7 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'service_review_screen.dart';
-import '../widgets/image_viewer.dart';
+import 'package:fix_easy/widgets/image_viewer.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);
@@ -293,13 +293,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Add service provider image
+                              // Add service provider image
                               if (booking['profilePicture'] != null)
                                 GestureDetector(
-                                  onTap: () => showFullScreenImage(
-                                    context, 
-                                    booking['profilePicture'],
-                                    isNetworkImage: false,
-                                  ),
+                                  onTap:
+                                      () => ImageViewer.showFullScreenImage(
+                                        context,
+                                        'https://fixease.pk${booking['profilePicture']}',
+                                      ),
                                   child: Container(
                                     height: 120,
                                     width: double.infinity,
@@ -314,8 +315,53 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                         fit: BoxFit.cover,
                                       ),
                                     ),
+                                    // Add a subtle indicator that the image is tappable
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(4),
+                                        ),
+                                        gradient: LinearGradient(
+                                          begin: Alignment.topRight,
+                                          end: Alignment.bottomLeft,
+                                          colors: [
+                                            Colors.black.withOpacity(0.1),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                      child: Align(
+                                        alignment: Alignment.topRight,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(8),
+                                          child: Icon(
+                                            Icons.zoom_in,
+                                            color: Colors.white.withOpacity(
+                                              0.8,
+                                            ),
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
+                              // if (booking['profilePicture'] != null)
+                              //   Container(
+                              //     height: 120,
+                              //     width: double.infinity,
+                              //     decoration: BoxDecoration(
+                              //       borderRadius: BorderRadius.vertical(
+                              //         top: Radius.circular(4),
+                              //       ),
+                              //       image: DecorationImage(
+                              //         image: NetworkImage(
+                              //           'https://fixease.pk${booking['profilePicture']}',
+                              //         ),
+                              //         fit: BoxFit.cover,
+                              //       ),
+                              //     ),
+                              //   ),
                               Padding(
                                 padding: EdgeInsets.all(16),
                                 child: Column(

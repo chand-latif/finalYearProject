@@ -1,8 +1,12 @@
+import 'package:fix_easy/customer_screens/all_companies_screen.dart';
+import 'package:fix_easy/customer_screens/company_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'nav_bar_customer.dart';
 import 'package:fix_easy/theme.dart';
 import 'category_services_screen.dart';
 import 'all_services_screen.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -54,6 +58,115 @@ class _CustomerHomeState extends State<CustomerHome> {
     },
   ];
 
+  bool isLoadingCompanies = true;
+  List<Map<String, dynamic>> featuredCompanies = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchFeaturedCompanies();
+  }
+
+  Future<void> fetchFeaturedCompanies() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyProfile/ListOfAllCompanyProfile',
+        ),
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        List<Map<String, dynamic>> companies = List<Map<String, dynamic>>.from(
+          data['data'],
+        );
+
+        // Fetch services for all companies in parallel
+        final futures = companies.map((company) async {
+          try {
+            final servicesResponse = await http.get(
+              Uri.parse(
+                'https://fixease.pk/api/CompanyServices/getListOfPublishedCompanyServices?CompanyId=${company['companyId']}',
+              ),
+            );
+
+            if (servicesResponse.statusCode == 200) {
+              final servicesData = json.decode(servicesResponse.body);
+              final services = List<Map<String, dynamic>>.from(
+                servicesData['data'],
+              );
+
+              int totalRatings = 0;
+              double totalRatingSum = 0;
+
+              for (var service in services) {
+                final serviceRating = service['serviceRating'];
+                if (serviceRating != null) {
+                  totalRatings += serviceRating['totalRatings'] as int;
+                  totalRatingSum +=
+                      (serviceRating['averageRating'] as num) *
+                      serviceRating['totalRatings'];
+                }
+              }
+
+              return {
+                ...company,
+                'totalRatings': totalRatings,
+                'averageRating':
+                    totalRatings > 0 ? totalRatingSum / totalRatings : 0.0,
+                'servicesCount': services.length,
+              };
+            }
+          } catch (e) {
+            print(
+              'Error fetching services for company ${company['companyId']}: $e',
+            );
+          }
+          return null;
+        });
+
+        // Wait for all requests to complete
+        final results = await Future.wait(futures);
+
+        if (!mounted) return;
+
+        // Filter out null results and sort by total ratings
+        final companiesWithRatings =
+            results
+                .where((company) => company != null)
+                .toList()
+                .cast<Map<String, dynamic>>();
+
+        companiesWithRatings.sort(
+          (a, b) =>
+              (b['totalRatings'] as int).compareTo(a['totalRatings'] as int),
+        );
+
+        setState(() {
+          featuredCompanies = companiesWithRatings.take(3).toList();
+          isLoadingCompanies = false;
+        });
+      } else {
+        if (mounted) {
+          setState(() {
+            featuredCompanies = [];
+            isLoadingCompanies = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching companies: $e');
+      if (mounted) {
+        setState(() {
+          featuredCompanies = [];
+          isLoadingCompanies = false;
+        });
+      }
+    }
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -89,9 +202,7 @@ class _CustomerHomeState extends State<CustomerHome> {
         backgroundColor: AppColors.primary,
         leading: IconButton(
           icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () {
-            // Handle menu tap
-          },
+          onPressed: () {},
         ),
         title: Text(
           'Home/Customer',
@@ -108,115 +219,54 @@ class _CustomerHomeState extends State<CustomerHome> {
           padding: EdgeInsets.all(15),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-
             children: [
-              // Welcome Card
+              // Welcome Section with Gradient Background
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.all(24),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 20,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
+                  gradient: LinearGradient(
+                    colors: [Colors.cyan, Colors.teal],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'HELLO ABC ',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[600],
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        Text('👋', style: TextStyle(fontSize: 16)),
-                      ],
+                    Text(
+                      'Welcome back! 👋',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(height: 8),
                     Text(
-                      'What you are looking\nfor today',
+                      'Find your perfect service provider',
                       style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                        height: 1.2,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    // Search Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TextField(
-                        controller: _searchController,
-                        onSubmitted: _onSearch,
-                        decoration: InputDecoration(
-                          hintText: 'Search what you need...',
-                          hintStyle: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 14,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: Colors.grey[500],
-                          ),
-                          suffixIcon: Container(
-                            height: 22,
-                            width: 20,
-                            margin: EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.teal,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.search,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              onPressed:
-                                  () => _onSearch(_searchController.text),
-                            ),
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
-                        ),
+                        color: Colors.white.withOpacity(0.9),
+                        fontSize: 16,
                       ),
                     ),
                   ],
                 ),
               ),
 
-              SizedBox(height: 32),
+              SizedBox(height: 30),
 
-              // All Category Section
+              // Browse by Category Section
               Text(
-                'All Category',
+                'Browse by Category',
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-
               SizedBox(height: 20),
-
-              // Services Grid
               GridView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -238,9 +288,22 @@ class _CustomerHomeState extends State<CustomerHome> {
                 },
               ),
 
-              SizedBox(height: 24),
+              SizedBox(height: 30),
 
-              // All Services Button
+              // Companies Section
+              Text(
+                'Featured Companies',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 16),
+              _buildFeaturedCompaniesSection(),
+
+              // Add View All Services button at the bottom
+              SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -254,20 +317,17 @@ class _CustomerHomeState extends State<CustomerHome> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: Text(
-                    'View All Services',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    'Browse All Services',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),
-
-              SizedBox(height: 20),
             ],
           ),
         ),
@@ -355,6 +415,141 @@ class _CustomerHomeState extends State<CustomerHome> {
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFeaturedCompaniesSection() {
+    if (isLoadingCompanies) {
+      return SizedBox(
+        height: 160,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return SizedBox(
+      height: 160,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        physics: BouncingScrollPhysics(),
+        children: [
+          ...featuredCompanies.map(
+            (company) => _buildCompanyCard(
+              company['companyName'] ?? 'N/A',
+              'https://fixease.pk${company['companyLogo']}',
+              '⭐ ${company['averageRating']?.toStringAsFixed(1) ?? '0.0'}',
+              '${company['servicesCount']} Services',
+              company: company,
+            ),
+          ),
+          // See All Card
+          GestureDetector(
+            onTap:
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AllCompaniesScreen()),
+                ),
+            child: Container(
+              width: 140,
+              margin: EdgeInsets.only(right: 16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primary.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: AppColors.primary,
+                      size: 30,
+                    ),
+                  ),
+                  SizedBox(height: 12),
+                  Text(
+                    'See All\nCompanies',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyCard(
+    String name,
+    String logoUrl,
+    String rating,
+    String services, {
+    Map<String, dynamic>? company,
+  }) {
+    return GestureDetector(
+      onTap:
+          company != null
+              ? () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CompanyDetailsScreen(company: company),
+                ),
+              )
+              : null,
+      child: Container(
+        width: 140,
+        margin: EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundColor: Colors.grey[200],
+              backgroundImage: NetworkImage(logoUrl),
+              onBackgroundImageError: (_, __) {},
+            ),
+            SizedBox(height: 12),
+            Text(
+              name,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 4),
+            Text(rating, style: TextStyle(color: Colors.amber, fontSize: 12)),
+            SizedBox(height: 4),
+            Text(
+              services,
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
             ),
           ],
         ),
