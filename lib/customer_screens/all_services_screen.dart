@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../theme.dart';
 import 'service_details_screen.dart';
+import 'nav_bar_customer.dart';
+import 'package:fix_easy/widgets/image_viewer.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AllServicesScreen extends StatefulWidget {
   const AllServicesScreen({super.key});
@@ -46,9 +49,45 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
     }
   }
 
+  Widget _buildServiceShimmer() {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(height: 120, color: Colors.white),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(width: 120, height: 20, color: Colors.white),
+                      Container(width: 80, height: 20, color: Colors.white),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Container(height: 16, color: Colors.white),
+                  SizedBox(height: 8),
+                  Container(height: 16, width: 200, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('All Services'),
         backgroundColor: AppColors.primary,
@@ -56,7 +95,11 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
       ),
       body:
           isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                padding: EdgeInsets.all(16),
+                itemCount: 5,
+                itemBuilder: (context, index) => _buildServiceShimmer(),
+              )
               : services.isEmpty
               ? Center(child: Text('No services available'))
               : ListView.builder(
@@ -81,21 +124,28 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (service['serviceImage'] != null)
-                            ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(4),
-                              ),
-                              child: Image.network(
-                                'https://fixease.pk${service['serviceImage']}',
-                                height: 200,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder:
-                                    (_, __, ___) => Container(
-                                      height: 200,
-                                      color: Colors.grey[300],
-                                      child: Icon(Icons.error),
-                                    ),
+                            GestureDetector(
+                              onTap:
+                                  () => ImageViewer.showFullScreenImage(
+                                    context,
+                                    'https://fixease.pk${service['serviceImage']}',
+                                  ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(4),
+                                ),
+                                child: Image.network(
+                                  'https://fixease.pk${service['serviceImage']}',
+                                  height: 120,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder:
+                                      (_, __, ___) => Container(
+                                        height: 120,
+                                        color: Colors.grey[300],
+                                        child: Icon(Icons.error),
+                                      ),
+                                ),
                               ),
                             ),
                           Padding(
@@ -219,6 +269,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
                   );
                 },
               ),
+      bottomNavigationBar: CustomNavBar(currentIndex: 2),
     );
   }
 }

@@ -100,280 +100,175 @@ class _SignUpState extends State<SignUp> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Sign Up'),
         backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(20.0), //test
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            spacing: 20,
             children: [
-              Text(
-                'Make your future bright with us!',
-                style: TextStyle(fontSize: 20, color: AppColors.primary),
+              // Welcome Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Make your future bright with us!',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Create New Account',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              Column(
-                spacing: 10,
-                children: [
-                  Text(
-                    'Create New Account',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+              SizedBox(height: 20),
+
+              // Form Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 7,
                     children: [
-                      Text('Full Name'),
-                      TextField(
-                        controller: nameController,
-                        onChanged: validateName,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          hintText: 'Enter your full name',
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                          errorText: nameError,
-                        ),
+                      _buildInputField(
+                        'Full Name',
+                        nameController,
+                        Icons.person,
+                        validateName,
+                        nameError,
                       ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 7,
-                    children: [
-                      Text('Email Address'),
-                      TextField(
-                        controller: emailController,
-                        onChanged: validateEmail,
+                      SizedBox(height: 16),
+                      _buildInputField(
+                        'Email Address',
+                        emailController,
+                        Icons.email,
+                        validateEmail,
+                        emailError,
                         keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          hintText: 'Enter your Email',
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                          errorText: emailError,
-                        ),
                       ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 7,
-                    children: [
-                      Text('Phone Number'),
-                      TextField(
-                        controller: phoneController,
-                        onChanged: validatePhone,
-                        keyboardType: TextInputType.number,
+                      SizedBox(height: 16),
+                      _buildInputField(
+                        'Phone Number',
+                        phoneController,
+                        Icons.phone,
+                        validatePhone,
+                        phoneError,
+                        keyboardType: TextInputType.phone,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                           LengthLimitingTextInputFormatter(11),
                         ],
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          hintText: 'Enter your 11-digit number',
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                          errorText: phoneError,
-                        ),
                       ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 7,
-                    children: [
-                      Text('Password'),
-                      TextField(
-                        controller: passwordController,
-                        onChanged: validatePassword,
-                        obscureText: isObscurePassword,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isObscurePassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                isObscurePassword = !isObscurePassword;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                          hintText: 'Enter your password',
-                          errorText: passwordError,
-                        ),
+                      SizedBox(height: 16),
+                      _buildPasswordField(
+                        'Password',
+                        passwordController,
+                        isObscurePassword,
+                        (value) {
+                          setState(
+                            () => isObscurePassword = !isObscurePassword,
+                          );
+                        },
+                        validatePassword,
+                        passwordError,
                       ),
-                    ],
-                  ),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    spacing: 7,
-                    children: [
-                      Text('Confirm Password'),
-                      TextField(
-                        controller: confirmPasswordController,
-                        obscureText: isObscureConfirmPassword,
-                        decoration: InputDecoration(
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              isObscureConfirmPassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              setState(() {
+                      SizedBox(height: 16),
+                      _buildPasswordField(
+                        'Confirm Password',
+                        confirmPasswordController,
+                        isObscureConfirmPassword,
+                        (value) {
+                          setState(
+                            () =>
                                 isObscureConfirmPassword =
-                                    !isObscureConfirmPassword;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.white,
-                              width: 2,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 0,
-                            horizontal: 10,
-                          ),
-                          hintText: 'Confirm your password',
-                        ),
+                                    !isObscureConfirmPassword,
+                          );
+                        },
+                        null,
+                        null,
                       ),
                     ],
                   ),
-                ],
-              ),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed:
-                      isLoading
-                          ? null
-                          : () async {
-                            if (isFormValid()) {
-                              setState(() {
-                                isLoading = true;
-                              });
-
-                              await signUpUser();
-
-                              setState(() {
-                                isLoading = false;
-                              });
-                            }
-                          },
-                  child:
-                      isLoading
-                          ? SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
-                          )
-                          : Text('Sign Up', style: TextStyle(fontSize: 20)),
                 ),
               ),
+              SizedBox(height: 24),
+
+              // Submit Button
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed:
+                    isLoading
+                        ? null
+                        : () async {
+                          if (isFormValid()) {
+                            setState(() => isLoading = true);
+                            await signUpUser();
+                            setState(() => isLoading = false);
+                          }
+                        },
+                child:
+                    isLoading
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Text('Creating Account...'),
+                          ],
+                        )
+                        : Text('Sign Up', style: TextStyle(fontSize: 16)),
+              ),
+              SizedBox(height: 16),
+
+              // Sign In Link
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Already have an account?'),
                   TextButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/home');
-                    },
+                    onPressed: () => Navigator.pushNamed(context, '/home'),
                     child: Text(
                       'Sign In',
-                      style: TextStyle(color: AppColors.primary, fontSize: 15),
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -382,6 +277,94 @@ class _SignUpState extends State<SignUp> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInputField(
+    String label,
+    TextEditingController controller,
+    IconData icon,
+    Function(String)? onChanged,
+    String? errorText, {
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            hintText: 'Enter your ${label.toLowerCase()}', // Add hint text
+            prefixIcon: Icon(icon, color: AppColors.primary),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            errorText: errorText,
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPasswordField(
+    String label,
+    TextEditingController controller,
+    bool isObscure,
+    Function(bool) onToggle,
+    Function(String)? onChanged,
+    String? errorText,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        TextField(
+          controller: controller,
+          obscureText: isObscure,
+          onChanged: onChanged,
+          decoration: InputDecoration(
+            hintText:
+                label == 'Password'
+                    ? 'Enter your password'
+                    : 'Re-enter your password', // Add contextual hint text
+            prefixIcon: Icon(Icons.lock, color: AppColors.primary),
+            suffixIcon: IconButton(
+              icon: Icon(
+                isObscure ? Icons.visibility : Icons.visibility_off,
+                color: Colors.grey,
+              ),
+              onPressed: () => onToggle(!isObscure),
+            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey[300]!),
+            ),
+            errorText: errorText,
+            filled: true,
+            fillColor: Colors.white,
+          ),
+        ),
+      ],
     );
   }
 
@@ -540,5 +523,33 @@ class _SignUpState extends State<SignUp> {
     } catch (e) {
       print("Error sending OTP: $e");
     }
+  }
+}
+// }
+
+Future<void> sendOtp(String email) async {
+  final url = Uri.parse("https://fixease.pk/api/User/ResendVerificationOTP");
+
+  final body = {"email": email};
+
+  try {
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 200) {
+      // OTP sent successfully
+      print("OTP sent to $email");
+    } else {
+      print(
+        "Failed to send OTP: ${responseData["message"] ?? "Unknown error"}",
+      );
+    }
+  } catch (e) {
+    print("Error sending OTP: $e");
   }
 }

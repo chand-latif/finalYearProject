@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fix_easy/theme.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class UpdateCompanyProfileScreen extends StatefulWidget {
   final int userID;
@@ -127,88 +128,147 @@ class _UpdateCompanyProfileScreenState
 
   List<Widget> _buildWorkingHoursRows() {
     return _dayOff.keys.map((day) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(day, style: TextStyle(fontSize: 16)),
-            Row(
+      bool isOff = _dayOff[day] ?? false;
+      return Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
               children: [
                 SizedBox(
-                  width: 80,
-                  child: ElevatedButton(
-                    onPressed:
-                        _dayOff[day]! || !_dayOff[day]!
-                            ? () async {
-                              final TimeOfDay? picked = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    _workingHoursStart[day] ??
-                                    TimeOfDay(hour: 9, minute: 0),
-                              );
-                              if (picked != null &&
-                                  picked != _workingHoursStart[day]) {
-                                setState(() {
-                                  _workingHoursStart[day] = picked;
-                                });
-                              }
-                            }
-                            : null,
-                    child: Text(
-                      style: TextStyle(fontSize: 12),
-
-                      _workingHoursStart[day] == null
-                          ? '--:--'
-                          : '${_workingHoursStart[day]!.hour.toString().padLeft(2, '0')}:${_workingHoursStart[day]!.minute.toString().padLeft(2, '0')}',
+                  width: 100,
+                  child: Text(
+                    day,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: isOff ? Colors.grey : Colors.black87,
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
-                SizedBox(
-                  width: 80,
-                  child: ElevatedButton(
-                    onPressed:
-                        _dayOff[day]! || !_dayOff[day]!
-                            ? () async {
-                              final TimeOfDay? picked = await showTimePicker(
-                                context: context,
-                                initialTime:
-                                    _workingHoursEnd[day] ??
-                                    TimeOfDay(hour: 17, minute: 0),
-                              );
-                              if (picked != null &&
-                                  picked != _workingHoursEnd[day]) {
-                                setState(() {
-                                  _workingHoursEnd[day] = picked;
-                                });
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed:
+                              isOff
+                                  ? null
+                                  : () async {
+                                    final TimeOfDay? picked =
+                                        await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              _workingHoursStart[day] ??
+                                              TimeOfDay(hour: 9, minute: 0),
+                                        );
+                                    if (picked != null &&
+                                        picked != _workingHoursStart[day]) {
+                                      setState(
+                                        () => _workingHoursStart[day] = picked,
+                                      );
+                                    }
+                                  },
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            side: BorderSide(
+                              color:
+                                  isOff
+                                      ? Colors.grey.shade300
+                                      : AppColors.primary,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            _workingHoursStart[day] == null
+                                ? '--:--'
+                                : '${_workingHoursStart[day]!.hour.toString().padLeft(2, '0')}:${_workingHoursStart[day]!.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              color: isOff ? Colors.grey : AppColors.primary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        child: Text('to', style: TextStyle(color: Colors.grey)),
+                      ),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed:
+                              isOff
+                                  ? null
+                                  : () async {
+                                    final TimeOfDay? picked =
+                                        await showTimePicker(
+                                          context: context,
+                                          initialTime:
+                                              _workingHoursEnd[day] ??
+                                              TimeOfDay(hour: 17, minute: 0),
+                                        );
+                                    if (picked != null &&
+                                        picked != _workingHoursEnd[day]) {
+                                      setState(
+                                        () => _workingHoursEnd[day] = picked,
+                                      );
+                                    }
+                                  },
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            side: BorderSide(
+                              color:
+                                  isOff
+                                      ? Colors.grey.shade300
+                                      : AppColors.primary,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            _workingHoursEnd[day] == null
+                                ? '--:--'
+                                : '${_workingHoursEnd[day]!.hour.toString().padLeft(2, '0')}:${_workingHoursEnd[day]!.minute.toString().padLeft(2, '0')}',
+                            style: TextStyle(
+                              color: isOff ? Colors.grey : AppColors.primary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Transform.scale(
+                        scale: 0.8,
+                        child: Switch(
+                          value: isOff,
+                          onChanged: (value) {
+                            setState(() {
+                              _dayOff[day] = value;
+                              if (value) {
+                                _workingHoursStart[day] = null;
+                                _workingHoursEnd[day] = null;
                               }
-                            }
-                            : null,
-                    child: Text(
-                      style: TextStyle(fontSize: 12),
-                      _workingHoursEnd[day] == null
-                          ? '--:--'
-                          : '${_workingHoursEnd[day]!.hour.toString().padLeft(2, '0')}:${_workingHoursEnd[day]!.minute.toString().padLeft(2, '0')}',
-                    ),
+                            });
+                          },
+                          activeColor: Colors.red,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Checkbox(
-                  value: _dayOff[day],
-                  onChanged: (value) {
-                    setState(() {
-                      _dayOff[day] = value ?? false;
-                      if (value ?? false) {
-                        _workingHoursStart[day] = null;
-                        _workingHoursEnd[day] = null;
-                      }
-                    });
-                  },
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          if (day != _dayOff.keys.last) Divider(height: 1),
+        ],
       );
     }).toList();
   }
@@ -231,56 +291,34 @@ class _UpdateCompanyProfileScreenState
         'Content-Type': 'multipart/form-data',
       });
 
-      request.fields['CompanyId'] = widget.companyID.toString();
-      request.fields['MondayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Monday'],
-      );
-      request.fields['MondayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Monday'],
-      );
-      request.fields['IsOffMonday'] = _dayOff['Monday'].toString();
-      request.fields['TuesdayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Tuesday'],
-      );
-      request.fields['TuesdayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Tuesday'],
-      );
-      request.fields['IsOffTuesday'] = _dayOff['Tuesday'].toString();
-      request.fields['WednesdayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Wednesday'],
-      );
-      request.fields['WednesdayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Wednesday'],
-      );
-      request.fields['IsOffWednesday'] = _dayOff['Wednesday'].toString();
-      request.fields['ThursdayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Thursday'],
-      );
-      request.fields['ThursdayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Thursday'],
-      );
-      request.fields['IsOffThursday'] = _dayOff['Thursday'].toString();
-      request.fields['FridayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Friday'],
-      );
-      request.fields['FridayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Friday'],
-      );
-      request.fields['IsOffFriday'] = _dayOff['Friday'].toString();
-      request.fields['SaturdayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Saturday'],
-      );
-      request.fields['SaturdayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Saturday'],
-      );
-      request.fields['IsOffSaturday'] = _dayOff['Saturday'].toString();
-      request.fields['SundayStartTime'] = _formatTimeOfDay(
-        _workingHoursStart['Sunday'],
-      );
-      request.fields['SundayEndTime'] = _formatTimeOfDay(
-        _workingHoursEnd['Sunday'],
-      );
-      request.fields['IsOffSunday'] = _dayOff['Sunday'].toString();
+      // Fix: Make sure Monday's state is being sent correctly
+      request.fields.addAll({
+        'CompanyId': widget.companyID.toString(),
+        'IsOffMonday':
+            _dayOff['Monday']!
+                .toString()
+                .toLowerCase(), // Fix: Add .toLowerCase()
+        'MondayStartTime': _formatTimeOfDay(_workingHoursStart['Monday']),
+        'MondayEndTime': _formatTimeOfDay(_workingHoursEnd['Monday']),
+        'IsOffTuesday': _dayOff['Tuesday'].toString(),
+        'TuesdayStartTime': _formatTimeOfDay(_workingHoursStart['Tuesday']),
+        'TuesdayEndTime': _formatTimeOfDay(_workingHoursEnd['Tuesday']),
+        'IsOffWednesday': _dayOff['Wednesday'].toString(),
+        'WednesdayStartTime': _formatTimeOfDay(_workingHoursStart['Wednesday']),
+        'WednesdayEndTime': _formatTimeOfDay(_workingHoursEnd['Wednesday']),
+        'IsOffThursday': _dayOff['Thursday'].toString(),
+        'ThursdayStartTime': _formatTimeOfDay(_workingHoursStart['Thursday']),
+        'ThursdayEndTime': _formatTimeOfDay(_workingHoursEnd['Thursday']),
+        'IsOffFriday': _dayOff['Friday'].toString(),
+        'FridayStartTime': _formatTimeOfDay(_workingHoursStart['Friday']),
+        'FridayEndTime': _formatTimeOfDay(_workingHoursEnd['Friday']),
+        'IsOffSaturday': _dayOff['Saturday'].toString(),
+        'SaturdayStartTime': _formatTimeOfDay(_workingHoursStart['Saturday']),
+        'SaturdayEndTime': _formatTimeOfDay(_workingHoursEnd['Saturday']),
+        'IsOffSunday': _dayOff['Sunday'].toString(),
+        'SundayStartTime': _formatTimeOfDay(_workingHoursStart['Sunday']),
+        'SundayEndTime': _formatTimeOfDay(_workingHoursEnd['Sunday']),
+      });
 
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
@@ -292,6 +330,9 @@ class _UpdateCompanyProfileScreenState
             backgroundColor: Colors.green,
           ),
         );
+
+        // Add: Notify the profile page to refresh
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -532,6 +573,7 @@ class _UpdateCompanyProfileScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Update Company Profile'),
         backgroundColor: AppColors.primary,
@@ -541,204 +583,269 @@ class _UpdateCompanyProfileScreenState
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
+            // Profile Images Card
             Card(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          Center(child: buildImageWidget('profile')),
-                          SizedBox(height: 20),
-                          Center(child: buildImageWidget('company')),
-                        ],
-                      ),
-
-                      SizedBox(height: 20),
-                      TextFormField(
-                        controller: companyNameController,
-                        decoration: InputDecoration(
-                          labelText: 'Company Name *',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primary),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter company name';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: phoneNumberController,
-                        decoration: InputDecoration(
-                          labelText: 'Phone Number *',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primary),
-                          ),
-                        ),
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter phone number';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: whatsappNumberController,
-                        decoration: InputDecoration(
-                          labelText: 'WhatsApp Number *',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primary),
-                          ),
-                        ),
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter WhatsApp number';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: companyAddressController,
-                        decoration: InputDecoration(
-                          labelText: 'Company Address *',
-                          border: OutlineInputBorder(),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: AppColors.primary),
-                          ),
-                        ),
-                        maxLines: 2,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter company address';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 24),
-                      Center(
-                        child: ElevatedButton(
-                          onPressed: isLoading ? null : submitForm,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 32,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child:
-                              isLoading
-                                  ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Text('Updating Profile...'),
-                                    ],
-                                  )
-                                  : Text('Update Profile'),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                    ],
-                  ),
-                ),
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-            ),
-            Card(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: const EdgeInsets.all(16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Working Hours',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Set your working hours for each day or mark days as off',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                    ),
-                    SizedBox(height: 16),
-                    ..._buildWorkingHoursRows(),
-                    SizedBox(height: 24),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : _updateWorkingHours,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 32,
-                            vertical: 16,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Company Images',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        child:
-                            isLoading
-                                ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Colors.white,
-                                            ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 12),
-                                    Text('Updating Working Hours...'),
-                                  ],
-                                )
-                                : Text('Update Working Hours'),
-                      ),
+                        Text(
+                          '(Required)',
+                          style: TextStyle(color: Colors.red, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(children: [buildImageWidget('profile')]),
+                        Column(children: [buildImageWidget('company')]),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
+            SizedBox(height: 16),
+
+            // Company Information Form
+            Form(
+              key: _formKey,
+              child: Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Basic Information',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: companyNameController,
+                        decoration: _buildInputDecoration(
+                          'Company Name',
+                          Icons.business,
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter company name'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: phoneNumberController,
+                        decoration: _buildInputDecoration(
+                          'Phone Number',
+                          Icons.phone,
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter phone number'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: whatsappNumberController,
+                        decoration: _buildInputDecoration(
+                          'WhatsApp Number',
+                          FontAwesomeIcons.whatsapp,
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter WhatsApp number'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: companyAddressController,
+                        decoration: _buildInputDecoration(
+                          'Company Address',
+                          Icons.location_on,
+                        ),
+                        maxLines: 2,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter company address'
+                                    : null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+
+            // Working Hours Card with Update Button
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Working Hours',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _updateWorkingHours,
+                          icon: Icon(Icons.save, size: 18),
+                          label: Text('Save Hours'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Set working hours or mark days as off',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    ),
+                    SizedBox(height: 16),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            children: [
+                              SizedBox(
+                                width: 100,
+                                child: Text(
+                                  'Day',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Center(child: Text('Start')),
+                                    ),
+                                    SizedBox(width: 40),
+                                    Expanded(child: Center(child: Text('End'))),
+                                    SizedBox(width: 48),
+                                    Text('Off'),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Divider(thickness: 1),
+                        ..._buildWorkingHoursRows(),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(height: 24),
+
+            // Submit Button
+            ElevatedButton(
+              onPressed: isLoading ? null : submitForm,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                minimumSize: Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child:
+                  isLoading
+                      ? Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text('Updating Profile...'),
+                        ],
+                      )
+                      : Text('Update Profile Information'),
+            ),
           ],
         ),
       ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: AppColors.primary),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.primary, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      filled: true,
+      fillColor: Colors.white,
     );
   }
 

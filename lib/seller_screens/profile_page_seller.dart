@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'update_company_profile.dart';
+import 'nav_bar_seller.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 enum AvailabilityStatus { Available, Busy, Away }
 
@@ -167,7 +169,9 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
           companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
           companyProfileURL = companyData['profilePicture'] ?? '';
           companyLogoURL = companyData['companyLogo'] ?? '';
-          currentAvailabilityStatus = getStatusText(companyData['status']);
+          currentAvailabilityStatus = getStatusText(
+            int.tryParse(companyData['status'].toString()),
+          );
         });
       }
     }
@@ -281,67 +285,107 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
               companyID: companyId,
             ),
       ),
-    );
+    ).then((value) {
+      // Refresh data when returning from update screen
+      if (value == true) {
+        fetchCompanyInfo();
+        fetchWorkingHours();
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "My Profile",
-          style: TextStyle(color: Colors.black, fontSize: 20),
-        ),
-        backgroundColor: AppColors.primary,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // User Information Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        "👤 Name: $userName",
-                        style: TextStyle(fontSize: 17),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "📧 Email: $userEmail",
-                        style: TextStyle(fontSize: 17),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "📅 Joining Date: $joiningDate",
-                        style: TextStyle(fontSize: 17),
-                      ),
-                    ],
+      backgroundColor: Colors.grey[50],
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            pinned: true,
+            backgroundColor: AppColors.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topRight,
+                    end: Alignment.bottomLeft,
+                    colors: [Colors.cyan, Colors.teal],
                   ),
                 ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      backgroundImage:
+                          companyProfileURL.isNotEmpty
+                              ? NetworkImage(
+                                'https://fixease.pk/$companyProfileURL',
+                              )
+                              : null,
+                      child:
+                          companyProfileURL.isEmpty
+                              ? Icon(Icons.person, size: 50, color: Colors.grey)
+                              : null,
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      userName,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 20),
-              // Company Information Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+            ),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Status Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Availability Status',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 15,
-                            ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Current Status',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                currentAvailabilityStatus,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      currentAvailabilityStatus == 'Available'
+                                          ? Colors.green
+                                          : currentAvailabilityStatus == 'Busy'
+                                          ? Colors.orange
+                                          : Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                           isUpdatingStatus
                               ? SizedBox(
@@ -370,175 +414,195 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
                               ),
                         ],
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          if (companyProfileURL.isNotEmpty)
-                            Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      'https://fixease.pk/$companyProfileURL',
-                                      height: 90,
-                                      width: 90,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                                Text('Profile Photo'),
-                              ],
-                            ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
 
-                          if (companyLogoURL.isNotEmpty)
-                            Column(
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                  child: ClipOval(
-                                    child: Image.network(
-                                      'https://fixease.pk/$companyLogoURL',
-                                      height: 90,
-                                      width: 90,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) =>
-                                              Icon(Icons.error),
-                                    ),
-                                  ),
-                                ),
-                                Text('Company Logo'),
-                              ],
-                            ),
-                        ],
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Company Info Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "🏢 Company: $companyName",
+                            'Company Information',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
+                          Divider(height: 24),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(
+                                0.1,
+                              ),
+                              child: Icon(
+                                Icons.business,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            title: Text('Company Name'),
+                            subtitle: Text(companyName),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(
+                                0.1,
+                              ),
+                              child: Icon(
+                                Icons.location_on,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            title: Text('Address'),
+                            subtitle: Text(companyAddress),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: AppColors.primary.withOpacity(
+                                0.1,
+                              ),
+                              child: Icon(
+                                Icons.phone,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            title: Text('Phone'),
+                            subtitle: Text(companyPhoneNumber),
+                            contentPadding: EdgeInsets.zero,
+                          ),
+                          ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: Colors.green.withOpacity(0.1),
+                              child: Icon(
+                                FontAwesomeIcons.whatsapp,
+                                color: Colors.green,
+                                size: 30,
+                              ),
+                            ),
+                            title: Text('WhatsApp'),
+                            subtitle: Text(companyWhatsappNumber),
+                            contentPadding: EdgeInsets.zero,
+                          ),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      Text(
-                        "📍 Address: $companyAddress",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "📞 Phone: $companyPhoneNumber",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        "💬 WhatsApp: $companyWhatsappNumber",
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              // Working Hours Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "🕒 Working Hours",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Table(
-                        border: TableBorder.all(color: Colors.grey),
-                        columnWidths: {
-                          0: FlexColumnWidth(2),
-                          1: FlexColumnWidth(1),
-                          2: FlexColumnWidth(1),
-                        },
-                        children:
-                            _dayOff.keys.map((day) {
-                              return TableRow(
+                  SizedBox(height: 16),
+
+                  // Working Hours Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Working Hours',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Divider(height: 24),
+                          ..._dayOff.keys.map((day) {
+                            final isOff = _dayOff[day] ?? false;
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 12),
+                              child: Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
+                                  SizedBox(
+                                    width: 100,
                                     child: Text(
                                       day,
-                                      style: TextStyle(fontSize: 16),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        color:
+                                            isOff
+                                                ? Colors.grey
+                                                : Colors.black87,
+                                      ),
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      _formatTimeOfDay(_workingHoursStart[day]),
-                                      style: TextStyle(fontSize: 16),
+                                  if (!isOff) ...[
+                                    Expanded(
+                                      child: Text(
+                                        '${_formatTimeOfDay(_workingHoursStart[day])} - ${_formatTimeOfDay(_workingHoursEnd[day])}',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(
-                                      _formatTimeOfDay(_workingHoursEnd[day]),
-                                      style: TextStyle(fontSize: 16),
+                                  ] else
+                                    Expanded(
+                                      child: Text(
+                                        'Off Day',
+                                        style: TextStyle(
+                                          color: Colors.red,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                      ),
                                     ),
-                                  ),
                                 ],
-                              );
-                            }).toList(),
+                              ),
+                            );
+                          }).toList(),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => navigate(),
-                  icon: Icon(Icons.edit),
-                  label: Text("Update Company Profile"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14),
+                  SizedBox(height: 24),
+
+                  // Action Buttons
+                  ElevatedButton.icon(
+                    onPressed: () => navigate(),
+                    icon: Icon(Icons.edit),
+                    label: Text("Update Company Profile"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => _logout(context),
-                  icon: Icon(Icons.logout),
-                  label: Text("Logout"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 14),
+                  SizedBox(height: 12),
+                  ElevatedButton.icon(
+                    onPressed: () => _logout(context),
+                    icon: Icon(Icons.logout),
+                    label: Text("Logout"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(height: 0),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+      bottomNavigationBar: NavBarSeller(currentIndex: 3),
     );
   }
 }

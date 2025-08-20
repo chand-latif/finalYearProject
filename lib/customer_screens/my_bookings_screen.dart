@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'service_review_screen.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
+import 'nav_bar_customer.dart';
+import 'package:shimmer/shimmer.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);
@@ -235,9 +237,47 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
+  Widget _buildBookingShimmer() {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(height: 120, color: Colors.white),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(width: 150, height: 24, color: Colors.white),
+                      Container(width: 80, height: 24, color: Colors.white),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Container(height: 16, color: Colors.white),
+                  SizedBox(height: 8),
+                  Container(height: 16, width: 200, color: Colors.white),
+                  SizedBox(height: 8),
+                  Container(height: 16, width: 150, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Add this line
       appBar: AppBar(
         title: Text('My Bookings'),
         backgroundColor: AppColors.primary,
@@ -247,7 +287,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         children: [
           // Status Filter Dropdown
           Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.fromLTRB(15, 15, 15, 7),
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
@@ -279,7 +319,11 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           Expanded(
             child:
                 isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? ListView.builder(
+                      padding: EdgeInsets.all(16),
+                      itemCount: 4,
+                      itemBuilder: (context, index) => _buildBookingShimmer(),
+                    )
                     : bookings.isEmpty
                     ? Center(child: Text('No bookings found'))
                     : ListView.builder(
@@ -288,7 +332,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       itemBuilder: (context, index) {
                         final booking = bookings[index];
                         return Card(
-                          margin: EdgeInsets.only(bottom: 16),
+                          margin: EdgeInsets.only(bottom: 0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -313,35 +357,6 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                           'https://fixease.pk${booking['profilePicture']}',
                                         ),
                                         fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                    // Add a subtle indicator that the image is tappable
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(4),
-                                        ),
-                                        gradient: LinearGradient(
-                                          begin: Alignment.topRight,
-                                          end: Alignment.bottomLeft,
-                                          colors: [
-                                            Colors.black.withOpacity(0.1),
-                                            Colors.transparent,
-                                          ],
-                                        ),
-                                      ),
-                                      child: Align(
-                                        alignment: Alignment.topRight,
-                                        child: Padding(
-                                          padding: EdgeInsets.all(8),
-                                          child: Icon(
-                                            Icons.zoom_in,
-                                            color: Colors.white.withOpacity(
-                                              0.8,
-                                            ),
-                                            size: 20,
-                                          ),
-                                        ),
                                       ),
                                     ),
                                   ),
@@ -627,6 +642,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: CustomNavBar(currentIndex: 1), // Add this line
     );
   }
 

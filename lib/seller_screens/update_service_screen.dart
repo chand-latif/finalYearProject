@@ -154,6 +154,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Update Service'),
         backgroundColor: AppColors.primary,
@@ -166,176 +167,222 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Image Section
-              GestureDetector(
-                onTap: pickImage,
-                child: Container(
-                  width: double.infinity,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.grey[300]!),
-                  ),
-                  child:
-                      serviceImage != null
-                          ? Image.file(serviceImage!, fit: BoxFit.cover)
-                          : (existingImageUrl != null
-                              ? Image.network(
-                                'https://fixease.pk$existingImageUrl',
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Icon(Icons.error),
-                              )
-                              : Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.add_photo_alternate,
-                                    size: 50,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(height: 8),
-                                  Text('Tap to change image'),
-                                ],
-                              )),
+              // Image Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-              ),
-
-              SizedBox(height: 20),
-
-              // Form Fields
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                decoration: InputDecoration(
-                  labelText: 'Service Category *',
-                  border: OutlineInputBorder(),
-                ),
-                items:
-                    serviceCategories.keys.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    selectedCategory = newValue;
-                    selectedCategoryId = serviceCategories[newValue];
-                  });
-                },
-                validator: (value) => value == null ? 'Required' : null,
-              ),
-
-              SizedBox(height: 16),
-
-              DropdownButtonFormField<String>(
-                value: serviceType,
-                decoration: InputDecoration(
-                  labelText: 'Service Type',
-                  border: OutlineInputBorder(),
-                ),
-                items:
-                    ['Published', 'Draft'].map((type) {
-                      return DropdownMenuItem<String>(
-                        value: type,
-                        child: Text(type),
-                      );
-                    }).toList(),
-                onChanged: (newValue) {
-                  if (newValue != null) setState(() => serviceType = newValue);
-                },
-              ),
-
-              // Add remaining form fields
-              SizedBox(height: 16),
-              TextFormField(
-                controller: descriptionController,
-                decoration: InputDecoration(
-                  labelText: 'Service Description',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator:
-                    (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-
-              SizedBox(height: 16),
-              TextFormField(
-                controller: contactNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Contact Number',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-
-              SizedBox(height: 16),
-              TextFormField(
-                controller: serviceTagsController,
-                decoration: InputDecoration(
-                  labelText: 'Service Tags',
-                  border: OutlineInputBorder(),
-                  hintText: 'e.g. #plumbing #repair',
-                ),
-                validator:
-                    (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-
-              SizedBox(height: 16),
-              TextFormField(
-                controller: providerNameController,
-                decoration: InputDecoration(
-                  labelText: 'Provider Name',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-
-              SizedBox(height: 16),
-              TextFormField(
-                controller: addressController,
-                decoration: InputDecoration(
-                  labelText: 'Address',
-                  border: OutlineInputBorder(),
-                ),
-                validator:
-                    (value) => value?.isEmpty ?? true ? 'Required' : null,
-              ),
-
-              SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : updateService,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: pickImage,
+                      child: Container(
+                        height: 200,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(15),
+                          ),
+                        ),
+                        child:
+                            serviceImage != null
+                                ? Image.file(serviceImage!, fit: BoxFit.cover)
+                                : (existingImageUrl != null
+                                    ? Image.network(
+                                      'https://fixease.pk$existingImageUrl',
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (_, __, ___) =>
+                                              _buildImagePlaceholder(),
+                                    )
+                                    : _buildImagePlaceholder()),
+                      ),
                     ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 16),
+
+              // Service Details Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Service Details',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+
+                      // Form Fields
+                      DropdownButtonFormField<String>(
+                        value: selectedCategory,
+                        decoration: InputDecoration(
+                          labelText: 'Service Category *',
+                          border: OutlineInputBorder(),
+                        ),
+                        items:
+                            serviceCategories.keys.map((category) {
+                              return DropdownMenuItem<String>(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                        onChanged: (newValue) {
+                          setState(() {
+                            selectedCategory = newValue;
+                            selectedCategoryId = serviceCategories[newValue];
+                          });
+                        },
+                        validator: (value) => value == null ? 'Required' : null,
+                      ),
+
+                      SizedBox(height: 16),
+
+                      DropdownButtonFormField<String>(
+                        value: serviceType,
+                        decoration: InputDecoration(
+                          labelText: 'Service Type',
+                          border: OutlineInputBorder(),
+                        ),
+                        items:
+                            ['Published', 'Draft'].map((type) {
+                              return DropdownMenuItem<String>(
+                                value: type,
+                                child: Text(type),
+                              );
+                            }).toList(),
+                        onChanged: (newValue) {
+                          if (newValue != null)
+                            setState(() => serviceType = newValue);
+                        },
+                      ),
+
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: descriptionController,
+                        decoration: InputDecoration(
+                          labelText: 'Service Description',
+                          border: OutlineInputBorder(),
+                        ),
+                        maxLines: 3,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: contactNumberController,
+                        decoration: InputDecoration(
+                          labelText: 'Contact Number',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: serviceTagsController,
+                        decoration: InputDecoration(
+                          labelText: 'Service Tags',
+                          border: OutlineInputBorder(),
+                          hintText: 'e.g. #plumbing #repair',
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: providerNameController,
+                        decoration: InputDecoration(
+                          labelText: 'Provider Name',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: addressController,
+                        decoration: InputDecoration(
+                          labelText: 'Address',
+                          border: OutlineInputBorder(),
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+                    ],
                   ),
-                  child:
-                      isLoading
-                          ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
+                ),
+              ),
+              SizedBox(height: 24),
+
+              // Submit Button
+              ElevatedButton(
+                onPressed: isLoading ? null : updateService,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child:
+                    isLoading
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
                               ),
                             ),
-                          )
-                          : Text('Update Service'),
-                ),
+                            SizedBox(width: 12),
+                            Text('Updating Service...'),
+                          ],
+                        )
+                        : Text('Update Service'),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildImagePlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(Icons.add_photo_alternate, size: 50, color: Colors.grey),
+        SizedBox(height: 8),
+        Text('Tap to change image'),
+      ],
     );
   }
 

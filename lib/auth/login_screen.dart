@@ -183,180 +183,187 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(20.0),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Image.asset(
-                    'assets/logo.png',
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                  SizedBox(height: 30),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Email'),
-                      SizedBox(height: 8),
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        controller: emailController,
-                        decoration: InputDecoration(
-                          hintText: 'Enter your email',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Email is required';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      Text('Password'),
-                      SizedBox(height: 8),
-                      TextFormField(
-                        controller: passwordController,
-                        obscureText: _isObscure,
-                        decoration: InputDecoration(
-                          hintText: 'Enter your password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _isObscure
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isObscure = !_isObscure;
-                              });
-                            },
-                          ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Password is required';
-                          }
-                          return null;
-                        },
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
+                  // Logo and Welcome Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Column(
                         children: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/ForgotPassword');
-                            },
-                            child: Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                          Image.asset(
+                            'assets/logo.png',
+                            width: 150,
+                            height: 150,
+                            fit: BoxFit.contain,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Welcome Back!',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Sign in to continue',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Login Form Card
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Email',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          TextFormField(
+                            controller: emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: _buildInputDecoration(
+                              'Enter your email',
+                              Icons.email,
+                            ),
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true
+                                        ? 'Email is required'
+                                        : null,
+                          ),
+                          SizedBox(height: 16),
+                          Text(
+                            'Password',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 8),
+                          TextFormField(
+                            controller: passwordController,
+                            obscureText: _isObscure,
+                            decoration: _buildInputDecoration(
+                              'Enter your password',
+                              Icons.lock,
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _isObscure
+                                      ? Icons.visibility
+                                      : Icons.visibility_off,
+                                  color: Colors.grey,
+                                ),
+                                onPressed:
+                                    () => setState(
+                                      () => _isObscure = !_isObscure,
+                                    ),
                               ),
                             ),
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true
+                                        ? 'Password is required'
+                                        : null,
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed:
-                              _isLoading
-                                  ? null
-                                  : () {
-                                    if (_formKey.currentState!.validate()) {
-                                      signInUser();
-                                    }
-                                  },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          child:
-                              _isLoading
-                                  ? SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed:
+                                    () => Navigator.pushNamed(
+                                      context,
+                                      '/ForgotPassword',
                                     ),
-                                  )
-                                  : Text(
-                                    'Sign In',
-                                    style: TextStyle(fontSize: 18),
+                                child: Text(
+                                  'Forgot Password?',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.bold,
                                   ),
-                        ),
-                      ),
-                      SizedBox(height: 20),
-                      // SizedBox(
-                      //   width: double.infinity,
-                      //   child: ElevatedButton(
-                      //     onPressed: () {
-                      //       Navigator.pushNamed(context, '/customerHome');
-                      //     },
-                      //     child: Row(
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         Image.asset(
-                      //           'assets/google.png',
-                      //           width: 20,
-                      //           height: 20,
-                      //         ),
-                      //         SizedBox(width: 10),
-                      //         Text('Login with Google'),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                      // SizedBox(height: 10),
-                      // SizedBox(
-                      //   width: double.infinity,
-                      //   child: ElevatedButton(
-                      //     onPressed: () {},
-                      //     child: Row(
-                      //       mainAxisAlignment: MainAxisAlignment.center,
-                      //       children: [
-                      //         Image.asset(
-                      //           'assets/facebook.png',
-                      //           width: 20,
-                      //           height: 20,
-                      //         ),
-                      //         SizedBox(width: 10),
-                      //         Text('Login with Facebook'),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
-                      SizedBox(height: 20),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Don\'t have an account?'),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/accountType');
-                            },
-                            child: Text('Sign Up'),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Login Button
+                  ElevatedButton(
+                    onPressed:
+                        _isLoading
+                            ? null
+                            : () {
+                              if (_formKey.currentState!.validate()) {
+                                signInUser();
+                              }
+                            },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child:
+                        _isLoading
+                            ? SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                            : Text('Sign In', style: TextStyle(fontSize: 16)),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Sign Up Link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Don\'t have an account?'),
+                      TextButton(
+                        onPressed:
+                            () => Navigator.pushNamed(context, '/accountType'),
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -366,6 +373,29 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(
+    String hint,
+    IconData icon, {
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      prefixIcon: Icon(icon, color: AppColors.primary),
+      suffixIcon: suffixIcon,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.primary, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      filled: true,
+      fillColor: Colors.white,
     );
   }
 }

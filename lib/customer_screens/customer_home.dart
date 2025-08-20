@@ -7,6 +7,7 @@ import 'category_services_screen.dart';
 import 'all_services_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shimmer/shimmer.dart';
 
 class CustomerHome extends StatefulWidget {
   const CustomerHome({super.key});
@@ -184,14 +185,6 @@ class _CustomerHomeState extends State<CustomerHome> {
   //   // Navigate to service page
   //   // Navigator.pushNamed(context, route);
   // }
-
-  void _onSearch(String query) {
-    if (query.isNotEmpty) {
-      // Handle search functionality
-      // print('Searching for: $query');
-      // Implement search logic here
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +419,11 @@ class _CustomerHomeState extends State<CustomerHome> {
     if (isLoadingCompanies) {
       return SizedBox(
         height: 160,
-        child: Center(child: CircularProgressIndicator()),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          physics: NeverScrollableScrollPhysics(),
+          children: List.generate(3, (index) => _buildCompanyShimmer()),
+        ),
       );
     }
 
@@ -493,6 +490,47 @@ class _CustomerHomeState extends State<CustomerHome> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCompanyShimmer() {
+    return Container(
+      width: 140,
+      margin: EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 12,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+            ),
+            SizedBox(height: 12),
+            Container(width: 80, height: 12, color: Colors.white),
+            SizedBox(height: 8),
+            Container(width: 60, height: 10, color: Colors.white),
+            SizedBox(height: 8),
+            Container(width: 70, height: 10, color: Colors.white),
+          ],
+        ),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fix_easy/theme.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class CreateCompanyProfileScreen extends StatefulWidget {
   final int userID;
@@ -141,8 +142,18 @@ class _CreateCompanyProfileScreenState
       request.fields['WhatsappNumber'] = whatsappNumberController.text;
       request.fields['CompanyAddress'] = companyAddressController.text;
 
-      // Use the actual CompanyId from the controller
-      request.fields['WorkingHours.CompanyId'] = companyIdController.text;
+      // Fix: Make sure Monday's state is being sent correctly
+      request.fields.addAll({
+        'WorkingHours.CompanyId': companyIdController.text,
+        'WorkingHours.IsOffMonday': dayOff['Monday']!.toString().toLowerCase(),
+        'WorkingHours.MondayStartTime': formatTimeOfDay(
+          workingHoursStart['Monday'],
+        ),
+        'WorkingHours.MondayEndTime': formatTimeOfDay(
+          workingHoursEnd['Monday'],
+        ),
+        // ...rest of the fields...
+      });
 
       // Add company logo if selected
       if (companyLogo != null) {
@@ -237,71 +248,6 @@ class _CreateCompanyProfileScreenState
     }
   }
 
-  Widget buildTimePickerRow(String day) {
-    return Card(
-      margin: EdgeInsets.symmetric(vertical: 4),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Checkbox(
-                  value: dayOff[day],
-                  onChanged: (val) => setState(() => dayOff[day] = val!),
-                  activeColor: AppColors.primary,
-                ),
-                Text(
-                  "Day Off - $day",
-                  style: TextStyle(fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
-            if (!dayOff[day]!)
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("Start Time:", style: TextStyle(fontSize: 12)),
-                        TextButton(
-                          onPressed: () => pickTime(context, day, true),
-                          child: Text(
-                            workingHoursStart[day]?.format(context) ??
-                                'Pick Time',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("End Time:", style: TextStyle(fontSize: 12)),
-                        TextButton(
-                          onPressed: () => pickTime(context, day, false),
-                          child: Text(
-                            workingHoursEnd[day]?.format(context) ??
-                                'Pick Time',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget buildCompanyLogoWidget(bool isProfile) {
     return Column(
       children: [
@@ -365,6 +311,7 @@ class _CreateCompanyProfileScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Create Company Profile'),
         backgroundColor: AppColors.primary,
@@ -377,137 +324,343 @@ class _CreateCompanyProfileScreenState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    buildCompanyProfileWidget(true),
-                    buildCompanyLogoWidget(false),
-                  ],
+              // Profile Images Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-              ),
-              SizedBox(height: 20),
-              TextFormField(
-                controller: companyNameController,
-                decoration: InputDecoration(
-                  labelText: 'Company Name *',
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Company Images',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '(Required)',
+                            style: TextStyle(color: Colors.red, fontSize: 14),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          buildCompanyProfileWidget(true),
+                          buildCompanyLogoWidget(false),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter company name';
-                  }
-                  return null;
-                },
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: phoneNumberController,
-                decoration: InputDecoration(
-                  labelText: 'Phone Number *',
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary),
+
+              // Company Information Form
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Basic Information',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: companyNameController,
+                        decoration: _buildInputDecoration(
+                          'Company Name',
+                          Icons.business,
+                        ),
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter company name'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: phoneNumberController,
+                        decoration: _buildInputDecoration(
+                          'Phone Number',
+                          Icons.phone,
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter phone number'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: whatsappNumberController,
+                        decoration: _buildInputDecoration(
+                          'WhatsApp Number',
+                          FontAwesomeIcons.whatsapp,
+                        ),
+                        keyboardType: TextInputType.phone,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter WhatsApp number'
+                                    : null,
+                      ),
+                      SizedBox(height: 16),
+                      TextFormField(
+                        controller: companyAddressController,
+                        decoration: _buildInputDecoration(
+                          'Company Address',
+                          Icons.location_on,
+                        ),
+                        maxLines: 2,
+                        validator:
+                            (value) =>
+                                value?.isEmpty ?? true
+                                    ? 'Please enter company address'
+                                    : null,
+                      ),
+                    ],
                   ),
                 ),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter phone number';
-                  }
-                  return null;
-                },
               ),
               SizedBox(height: 16),
-              TextFormField(
-                controller: whatsappNumberController,
-                decoration: InputDecoration(
-                  labelText: 'WhatsApp Number *',
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
+
+              // Working Hours Card
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
                 ),
-                keyboardType: TextInputType.phone,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter WhatsApp number';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: companyAddressController,
-                decoration: InputDecoration(
-                  labelText: 'Company Address *',
-                  border: OutlineInputBorder(),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: AppColors.primary),
-                  ),
-                ),
-                maxLines: 2,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter company address';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 24),
-              Text(
-                'Working Hours',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              Text(
-                'Set your working hours for each day or mark days as off',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ),
-              SizedBox(height: 16),
-              ...dayOff.keys.map((day) => buildTimePickerRow(day)).toList(),
-              SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child:
-                      isLoading
-                          ? Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Working Hours',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Set your working hours or mark days as off',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                      ),
+                      SizedBox(height: 16),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 8,
+                            ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 100,
+                                  child: Text(
+                                    'Day',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              SizedBox(width: 12),
-                              Text('Creating Profile...'),
-                            ],
-                          )
-                          : Text('Create Profile'),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Center(child: Text('Start')),
+                                      ),
+                                      SizedBox(width: 40),
+                                      Expanded(
+                                        child: Center(child: Text('End')),
+                                      ),
+                                      SizedBox(width: 48),
+                                      Text('Off'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(thickness: 1),
+                          ...dayOff.keys
+                              .map((day) => buildTimePickerRow(day))
+                              .toList(),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 24),
+
+              // Submit Button
+              ElevatedButton(
+                onPressed: isLoading ? null : submitForm,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child:
+                    isLoading
+                        ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                                strokeWidth: 2,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Text('Creating Profile...'),
+                          ],
+                        )
+                        : Text('Create Profile'),
+              ),
+              SizedBox(height: 24),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _buildInputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: AppColors.primary),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: AppColors.primary, width: 2),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: Colors.grey[300]!),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+    );
+  }
+
+  // Update the buildTimePickerRow method to match new design
+  Widget buildTimePickerRow(String day) {
+    bool isOff = dayOff[day] ?? false;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 100,
+                child: Text(
+                  day,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: isOff ? Colors.grey : Colors.black87,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed:
+                            isOff ? null : () => pickTime(context, day, true),
+                        style: _timeButtonStyle(isOff),
+                        child: Text(
+                          workingHoursStart[day]?.format(context) ?? '--:--',
+                          style: TextStyle(
+                            color: isOff ? Colors.grey : AppColors.primary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      child: Text('to', style: TextStyle(color: Colors.grey)),
+                    ),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed:
+                            isOff ? null : () => pickTime(context, day, false),
+                        style: _timeButtonStyle(isOff),
+                        child: Text(
+                          workingHoursEnd[day]?.format(context) ?? '--:--',
+                          style: TextStyle(
+                            color: isOff ? Colors.grey : AppColors.primary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Transform.scale(
+                      scale: 0.8,
+                      child: Switch(
+                        value: isOff,
+                        onChanged: (value) {
+                          setState(() {
+                            dayOff[day] = value;
+                            if (value) {
+                              workingHoursStart[day] = null;
+                              workingHoursEnd[day] = null;
+                            }
+                          });
+                        },
+                        activeColor: Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (day != dayOff.keys.last) Divider(height: 1),
+      ],
+    );
+  }
+
+  ButtonStyle _timeButtonStyle(bool isOff) {
+    return OutlinedButton.styleFrom(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      side: BorderSide(color: isOff ? Colors.grey.shade300 : AppColors.primary),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 

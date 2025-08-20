@@ -80,6 +80,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      if (!mounted) return;
       setState(() {
         companyId = data['data']['companyId'];
       });

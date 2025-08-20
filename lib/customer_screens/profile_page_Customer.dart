@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'nav_bar_customer.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({super.key});
@@ -68,6 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50], // Add this line
       appBar: AppBar(
         title: Text(
           "My Profile",
@@ -124,6 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
+      bottomNavigationBar: CustomNavBar(currentIndex: 3),
     );
   }
 }

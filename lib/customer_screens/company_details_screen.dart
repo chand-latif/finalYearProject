@@ -5,6 +5,7 @@ import '../theme.dart';
 import 'service_details_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:fix_easy/widgets/image_viewer.dart';
 
 class CompanyDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> company;
@@ -94,7 +95,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final mediaQuery = MediaQuery.of(context);
+    // final mediaQuery = MediaQuery.of(context);
     return Scaffold(
       backgroundColor: AppColors.primary, // Change background color
       body: SafeArea(
@@ -289,11 +290,24 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   if (service['serviceImage'] != null)
-                                    Image.network(
-                                      'https://fixease.pk${service['serviceImage']}',
-                                      height: 200,
-                                      width: double.infinity,
-                                      fit: BoxFit.cover,
+                                    GestureDetector(
+                                      onTap:
+                                          () => ImageViewer.showFullScreenImage(
+                                            context,
+                                            'https://fixease.pk${service['serviceImage']}',
+                                          ),
+                                      child: Image.network(
+                                        'https://fixease.pk${service['serviceImage']}',
+                                        height: 120,
+                                        width: double.infinity,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (_, __, ___) => Container(
+                                              height: 120,
+                                              color: Colors.grey[300],
+                                              child: Icon(Icons.error),
+                                            ),
+                                      ),
                                     ),
                                   Padding(
                                     padding: EdgeInsets.all(16),

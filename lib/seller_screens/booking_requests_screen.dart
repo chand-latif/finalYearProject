@@ -4,7 +4,10 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:fix_easy/widgets/image_viewer.dart';
+import 'nav_bar_seller.dart';
+import 'package:shimmer/shimmer.dart';
+
+// import 'package:fix_easy/widgets/image_viewer.dart';
 
 class BookingRequestsScreen extends StatefulWidget {
   const BookingRequestsScreen({Key? key}) : super(key: key);
@@ -179,9 +182,59 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
     }
   }
 
+  Widget _buildBookingShimmer() {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(height: 200, color: Colors.white),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(width: 150, height: 24, color: Colors.white),
+                      Container(width: 80, height: 24, color: Colors.white),
+                    ],
+                  ),
+                  SizedBox(height: 12),
+                  Container(height: 16, color: Colors.white),
+                  SizedBox(height: 8),
+                  Container(height: 16, width: 200, color: Colors.white),
+                  SizedBox(height: 8),
+                  Container(height: 16, width: 150, color: Colors.white),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(height: 40, color: Colors.white),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Container(height: 40, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Booking Requests'),
         backgroundColor: AppColors.primary,
@@ -193,12 +246,17 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
           Expanded(
             child:
                 isLoading
-                    ? Center(child: CircularProgressIndicator())
+                    ? ListView.builder(
+                      padding: EdgeInsets.all(16),
+                      itemCount: 3,
+                      itemBuilder: (context, index) => _buildBookingShimmer(),
+                    )
                     : bookings.isEmpty
                     ? Center(child: Text('No bookings found'))
                     : ListView.builder(
                       padding: EdgeInsets.all(16),
                       itemCount: bookings.length,
+
                       itemBuilder: (context, index) {
                         final booking = bookings[index];
                         return Card(
@@ -508,6 +566,7 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
           ),
         ],
       ),
+      bottomNavigationBar: NavBarSeller(currentIndex: 1),
     );
   }
 }
