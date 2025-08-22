@@ -117,7 +117,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                     fit: StackFit.expand,
                     children: [
                       Image.network(
-                        'https://fixease.pk${widget.company['profilePicture'] ?? ''}',
+                        'https://fixease.pk${widget.company['companyLogo'] ?? ''}',
                         fit: BoxFit.cover,
                         errorBuilder:
                             (context, error, stackTrace) => Container(
@@ -159,6 +159,8 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                         children: [
                           // Company Info Card
                           Card(
+                            elevation: 2,
+                            color: Colors.white,
                             child: Padding(
                               padding: EdgeInsets.all(16),
                               child: Column(
@@ -192,7 +194,10 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                                                   )
                                                   : null,
                                           icon: Icon(Icons.phone),
-                                          label: Text('Call'),
+                                          label: Text(
+                                            'Call',
+                                            style: TextStyle(fontSize: 13),
+                                          ),
                                           style: ElevatedButton.styleFrom(
                                             backgroundColor: AppColors.primary,
                                           ),
@@ -212,11 +217,20 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                                           icon: Icon(
                                             FontAwesomeIcons.whatsapp,
                                             color: Colors.green,
-                                            size: 30,
+                                            size: 24,
                                           ), // Changed from phone to whatsapp
-                                          label: Text('WhatsApp'),
+                                          label: Text(
+                                            'WhatsApp',
+                                            style: TextStyle(fontSize: 13),
+                                          ),
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.green,
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                  255,
+                                                  144,
+                                                  221,
+                                                  147,
+                                                ),
                                           ),
                                         ),
                                       ),
@@ -285,6 +299,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                               );
                             },
                             child: Card(
+                              color: Colors.white,
                               margin: EdgeInsets.only(bottom: 16),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,

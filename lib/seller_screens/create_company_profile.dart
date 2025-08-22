@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:http/http.dart' as http;
 import 'package:fix_easy/theme.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
 
 class CreateCompanyProfileScreen extends StatefulWidget {
   final int userID;
@@ -30,6 +31,8 @@ class _CreateCompanyProfileScreenState
   File? companyLogo;
   File? companyProfile;
   bool isLoading = false;
+  String? phoneError;
+  String? whatsappNumberError;
 
   Map<String, TimeOfDay?> workingHoursStart = {};
   Map<String, TimeOfDay?> workingHoursEnd = {};
@@ -44,17 +47,54 @@ class _CreateCompanyProfileScreenState
   };
 
   Future<void> pickImage(bool isProfile) async {
-    if (isProfile == true) {
-      final pickedFile1 = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile1 != null) {
-        setState(() => companyProfile = File(pickedFile1.path));
-      }
-    } else {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-      if (pickedFile != null) {
-        setState(() => companyLogo = File(pickedFile.path));
-      }
-    }
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (context) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: AppColors.primary),
+                  title: Text('Take Photo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.camera,
+                    );
+                    if (pickedFile != null) {
+                      setState(() {
+                        if (isProfile) {
+                          companyProfile = File(pickedFile.path);
+                        } else {
+                          companyLogo = File(pickedFile.path);
+                        }
+                      });
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.photo_library, color: AppColors.primary),
+                  title: Text('Choose from Gallery'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (pickedFile != null) {
+                      setState(() {
+                        if (isProfile) {
+                          companyProfile = File(pickedFile.path);
+                        } else {
+                          companyLogo = File(pickedFile.path);
+                        }
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+    );
   }
 
   Future<void> pickTime(BuildContext context, String day, bool isStart) async {
@@ -137,6 +177,7 @@ class _CreateCompanyProfileScreenState
       // Add form fields
       request.fields['CompanyId'] = companyIdController.text;
       request.fields['UserId'] = widget.userID.toString();
+      request.fields['CreatedBy'] = widget.userID.toString();
       request.fields['CompanyName'] = companyNameController.text;
       request.fields['PhoneNumber'] = phoneNumberController.text;
       request.fields['WhatsappNumber'] = whatsappNumberController.text;
@@ -248,6 +289,30 @@ class _CreateCompanyProfileScreenState
     }
   }
 
+  void validatePhone(String phone) {
+    setState(() {
+      if (phone.isEmpty) {
+        phoneError = 'Phone number is required';
+      } else if (phone.length != 11) {
+        phoneError = 'Phone number must be 11 digits';
+      } else {
+        phoneError = null;
+      }
+    });
+  }
+
+  void validateWhatsappNumber(String whatsappNumber) {
+    setState(() {
+      if (whatsappNumber.isEmpty) {
+        whatsappNumberError = 'Whatsapp number is required';
+      } else if (whatsappNumber.length != 11) {
+        whatsappNumberError = 'Whatsapp number must be 11 digits';
+      } else {
+        whatsappNumberError = null;
+      }
+    });
+  }
+
   Widget buildCompanyLogoWidget(bool isProfile) {
     return Column(
       children: [
@@ -326,6 +391,7 @@ class _CreateCompanyProfileScreenState
             children: [
               // Profile Images Card
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -367,6 +433,7 @@ class _CreateCompanyProfileScreenState
 
               // Company Information Form
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -399,16 +466,30 @@ class _CreateCompanyProfileScreenState
                       SizedBox(height: 16),
                       TextFormField(
                         controller: phoneNumberController,
+
                         decoration: _buildInputDecoration(
                           'Phone Number',
                           Icons.phone,
                         ),
+
                         keyboardType: TextInputType.phone,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter phone number'
-                                    : null,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
+                        onChanged: (value) {
+                          validatePhone(value);
+                        },
+                        forceErrorText: phoneError,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return phoneError;
+                          }
+                          if (phoneError != null) {
+                            return phoneError;
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: 16),
                       TextFormField(
@@ -417,6 +498,14 @@ class _CreateCompanyProfileScreenState
                           'WhatsApp Number',
                           FontAwesomeIcons.whatsapp,
                         ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                          LengthLimitingTextInputFormatter(11),
+                        ],
+                        onChanged: (value) {
+                          validateWhatsappNumber(value);
+                        },
+                        forceErrorText: whatsappNumberError,
                         keyboardType: TextInputType.phone,
                         validator:
                             (value) =>
@@ -446,6 +535,7 @@ class _CreateCompanyProfileScreenState
 
               // Working Hours Card
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

@@ -87,6 +87,7 @@ class _ProfilePageState extends State<ProfilePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Card(
+              color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.all(10.0),
                 child: Column(

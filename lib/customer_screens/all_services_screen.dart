@@ -51,6 +51,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
 
   Widget _buildServiceShimmer() {
     return Card(
+      color: Colors.white,
       margin: EdgeInsets.only(bottom: 16),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
@@ -119,6 +120,7 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
                       );
                     },
                     child: Card(
+                      color: Colors.white,
                       margin: EdgeInsets.only(bottom: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

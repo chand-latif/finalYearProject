@@ -1,67 +1,122 @@
 import 'package:flutter/material.dart';
+import 'package:fix_easy/theme.dart';
+import 'update_service_screen.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
-import '../theme.dart';
-import 'book_service_screen.dart';
-import 'service_reviews_screen.dart';
+import 'package:fix_easy/customer_screens/service_reviews_screen.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
 
-class ServiceDetailsScreen extends StatelessWidget {
+class SellerServiceDetailsScreen extends StatelessWidget {
   final Map<String, dynamic> service;
+  final int companyId;
+  final VoidCallback? onServiceUpdated;
 
-  const ServiceDetailsScreen({Key? key, required this.service})
-    : super(key: key);
+  const SellerServiceDetailsScreen({
+    Key? key,
+    required this.service,
+    required this.companyId,
+    this.onServiceUpdated,
+  }) : super(key: key);
 
-  Future<void> _makePhoneCall(BuildContext context, String phoneNumber) async {
-    // Clean the phone number by removing spaces and any special characters
-    final cleanNumber = phoneNumber.replaceAll(RegExp(r'\s+'), '');
-
-    // Create the URI with the cleaned number
-    final Uri launchUri = Uri(scheme: 'tel', path: cleanNumber);
+  Future<void> _deleteService(BuildContext context) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder:
+          (ctx) => AlertDialog(
+            title: Text('Delete Service'),
+            content: Text('Are you sure you want to delete this service?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(false),
+                child: Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(ctx).pop(true),
+                child: Text('Delete', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+          ),
+    );
+    if (confirm != true) return;
 
     try {
-      if (!await launchUrl(launchUri)) {
-        throw 'Could not launch phone dialer';
+      final response = await http.delete(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyServices/DeleteCompanyService?ServiceId=${service['serviceId']}',
+        ),
+      );
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Service deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+        if (onServiceUpdated != null) onServiceUpdated!();
+      } else {
+        throw Exception('Failed to delete service');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open phone dialer: $e')),
+        SnackBar(
+          content: Text('Error deleting service: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
-    }
-  }
-
-  Future<void> _openLocationOnMap(BuildContext context) async {
-    final lat = service['latitude'];
-    final lng = service['longitude'];
-    if (lat == null || lng == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Location not available for this service')),
-      );
-      return;
-    }
-    final url = Uri.parse(
-      'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
-    );
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not open Google Maps')));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Service Details'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.edit, color: Colors.blue),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => UpdateServiceScreen(
+                        serviceId: service['serviceId'],
+                        companyId: companyId,
+                        initialData: {
+                          'description': service['serviceDescription'],
+                          'contactNumber': service['contactNumber'],
+                          'serviceTags': service['serviceTags'],
+                          'providerName': service['providerName'],
+                          'address': service['address'],
+                          'categoryName': service['categoryName'],
+                          'serviceType': service['serviceType'],
+                          'serviceImage': service['serviceImage'],
+                        },
+                      ),
+                ),
+              ).then((value) {
+                if (value == true && onServiceUpdated != null) {
+                  onServiceUpdated!();
+                  Navigator.pop(context);
+                }
+              });
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.red),
+            onPressed: () => _deleteService(context),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Service Image
             if (service['serviceImage'] != null)
               GestureDetector(
                 onTap:
@@ -82,13 +137,11 @@ class ServiceDetailsScreen extends StatelessWidget {
                       ),
                 ),
               ),
-
             Padding(
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category Badge
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -103,18 +156,12 @@ class ServiceDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-
                   SizedBox(height: 16),
-
-                  // Provider Name
                   Text(
                     service['providerName'] ?? 'N/A',
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
-
                   SizedBox(height: 24),
-
-                  // Description
                   Text(
                     'Description',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -128,10 +175,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                       height: 1.5,
                     ),
                   ),
-
                   SizedBox(height: 24),
-
-                  // Contact Information
                   Text(
                     'Contact Information',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -141,33 +185,46 @@ class ServiceDetailsScreen extends StatelessWidget {
                     leading: Icon(Icons.phone, color: AppColors.primary),
                     title: Text(service['contactNumber'] ?? 'N/A'),
                     contentPadding: EdgeInsets.zero,
-                    onTap:
-                        () => _makePhoneCall(context, service['contactNumber']),
                   ),
                   ListTile(
                     leading: Icon(Icons.location_on, color: AppColors.primary),
                     title: Text(service['address'] ?? 'N/A'),
                     contentPadding: EdgeInsets.zero,
                   ),
-                  SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: Icon(Icons.map),
-                      label: Text('View Location on Map'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                  if (service['latitude'] != null &&
+                      service['longitude'] != null)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        icon: Icon(Icons.map),
+                        label: Text('View Location on Map'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
+                        onPressed: () async {
+                          final lat = service['latitude'];
+                          final lng = service['longitude'];
+                          final url = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+                          );
+                          if (!await launchUrl(
+                            url,
+                            mode: LaunchMode.externalApplication,
+                          )) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Could not open Google Maps'),
+                              ),
+                            );
+                          }
+                        },
                       ),
-                      onPressed: () => _openLocationOnMap(context),
                     ),
-                  ),
-
-                  // Service Tags
                   if (service['serviceTags'] != null) ...[
                     SizedBox(height: 24),
                     Text(
@@ -192,7 +249,6 @@ class ServiceDetailsScreen extends StatelessWidget {
                               .toList(),
                     ),
                   ],
-
                   // Ratings & Reviews Section
                   SizedBox(height: 24),
                   Row(
@@ -289,59 +345,9 @@ class ServiceDetailsScreen extends StatelessWidget {
                       ),
                     ),
                   ],
+
+                  // Ratings & Reviews Section (optional for seller, can be added if needed)
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-          ],
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Navigator.push(context, route)
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => BookServiceScreen(
-                            serviceId: service['serviceId'],
-                          ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: Text(
-                  'Book Service',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            SizedBox(width: 12),
-            Container(
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                onPressed:
-                    () => _makePhoneCall(context, service['contactNumber']),
-                icon: Icon(Icons.phone, color: AppColors.primary),
               ),
             ),
           ],

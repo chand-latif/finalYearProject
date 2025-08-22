@@ -429,67 +429,72 @@ class _CustomerHomeState extends State<CustomerHome> {
 
     return SizedBox(
       height: 160,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        physics: BouncingScrollPhysics(),
-        children: [
-          ...featuredCompanies.map(
-            (company) => _buildCompanyCard(
-              company['companyName'] ?? 'N/A',
-              'https://fixease.pk${company['companyLogo']}',
-              '⭐ ${company['averageRating']?.toStringAsFixed(1) ?? '0.0'}',
-              '${company['servicesCount']} Services',
-              company: company,
-            ),
-          ),
-          // See All Card
-          GestureDetector(
-            onTap:
-                () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AllCompaniesScreen()),
-                ),
-            child: Container(
-              width: 140,
-              margin: EdgeInsets.only(right: 16),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.primary.withOpacity(0.5),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.arrow_forward,
-                      color: AppColors.primary,
-                      size: 30,
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  Text(
-                    'See All\nCompanies',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          physics: BouncingScrollPhysics(),
+          children: [
+            ...featuredCompanies.map(
+              (company) => _buildCompanyCard(
+                company['companyName'] ?? 'N/A',
+                'https://fixease.pk${company['companyLogo']}',
+                '⭐ ${company['averageRating']?.toStringAsFixed(1) ?? '0.0'}',
+                '${company['servicesCount']} Services',
+                company: company,
               ),
             ),
-          ),
-        ],
+            // See All Card
+            GestureDetector(
+              onTap:
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AllCompaniesScreen(),
+                    ),
+                  ),
+              child: Container(
+                width: 140,
+                margin: EdgeInsets.only(right: 16),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppColors.primary.withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward,
+                        color: AppColors.primary,
+                        size: 30,
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'See All\nCompanies',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

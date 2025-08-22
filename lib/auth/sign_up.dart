@@ -113,6 +113,7 @@ class _SignUpState extends State<SignUp> {
             children: [
               // Welcome Card
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -142,6 +143,7 @@ class _SignUpState extends State<SignUp> {
 
               // Form Card
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

@@ -352,7 +352,8 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
                 children: [
                   // Status Card
                   Card(
-                    elevation: 2,
+                    color: Colors.white,
+                    elevation: 1,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
@@ -420,6 +421,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
 
                   // Company Info Card
                   Card(
+                    color: Colors.white,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -500,6 +502,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
 
                   // Working Hours Card
                   Card(
+                    color: Colors.white,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),

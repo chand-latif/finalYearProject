@@ -59,10 +59,42 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   bool showSearchResults = false;
 
   Future<void> pickImage() async {
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() => serviceImage = File(pickedFile.path));
-    }
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (context) => SafeArea(
+            child: Wrap(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.camera_alt, color: AppColors.primary),
+                  title: Text('Take Photo'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.camera,
+                    );
+                    if (pickedFile != null) {
+                      setState(() => serviceImage = File(pickedFile.path));
+                    }
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.photo_library, color: AppColors.primary),
+                  title: Text('Choose from Gallery'),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final pickedFile = await picker.pickImage(
+                      source: ImageSource.gallery,
+                    );
+                    if (pickedFile != null) {
+                      setState(() => serviceImage = File(pickedFile.path));
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+    );
   }
 
   Widget buildImagePicker() {
@@ -474,6 +506,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
               children: [
                 // Image Upload Card
                 Card(
+                  color: Colors.white,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
@@ -509,6 +542,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
                 // Service Details Card
                 Card(
+                  color: Colors.white,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
@@ -581,6 +615,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
                 // Location Card
                 Card(
+                  color: Colors.white,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
@@ -607,6 +642,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
 
                 // Additional Information Card
                 Card(
+                  color: Colors.white,
                   elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),

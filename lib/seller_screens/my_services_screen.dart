@@ -5,6 +5,7 @@ import '../theme.dart';
 import 'update_service_screen.dart' as update_service;
 import 'nav_bar_seller.dart';
 import 'package:shimmer/shimmer.dart';
+import 'seller_service_details_screen.dart';
 
 class MyServicesScreen extends StatefulWidget {
   final companyId;
@@ -109,6 +110,7 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
   Widget _buildServiceShimmer() {
     return Card(
       margin: EdgeInsets.only(bottom: 16),
+      color: Colors.white,
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
         highlightColor: Colors.grey[100]!,
@@ -170,194 +172,236 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                 itemCount: services.length,
                 itemBuilder: (context, index) {
                   final service = services[index];
-                  return Card(
-                    margin: EdgeInsets.only(bottom: 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Service Image
-                        if (service['serviceImage'] != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(4),
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => SellerServiceDetailsScreen(
+                                service: service,
+                                companyId: widget.companyId,
+                                onServiceUpdated: fetchServices,
+                              ),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      margin: EdgeInsets.only(bottom: 16),
+                      color: Colors.white,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Service Image
+                          if (service['serviceImage'] != null)
+                            ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(4),
+                              ),
+                              child: Image.network(
+                                'https://fixease.pk${service['serviceImage']}',
+                                height: 150,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder:
+                                    (_, __, ___) => Container(
+                                      height: 150,
+                                      color: Colors.grey[300],
+                                      child: Icon(Icons.error),
+                                    ),
+                              ),
                             ),
-                            child: Image.network(
-                              'https://fixease.pk${service['serviceImage']}',
-                              height: 150,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder:
-                                  (_, __, ___) => Container(
-                                    height: 150,
-                                    color: Colors.grey[300],
-                                    child: Icon(Icons.error),
-                                  ),
-                            ),
-                          ),
 
-                        Padding(
-                          padding: EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  // Category
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
+                          Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Category
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withOpacity(
+                                          0.1,
+                                        ),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: Text(
+                                        service['categoryName'] ?? 'N/A',
+                                        style: TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(4),
+
+                                    // Edit and Delete Buttons
+                                    Row(
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.edit,
+                                            color: Colors.blue,
+                                          ),
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder:
+                                                    (
+                                                      context,
+                                                    ) => update_service.UpdateServiceScreen(
+                                                      serviceId:
+                                                          service['serviceId'],
+                                                      companyId:
+                                                          widget.companyId,
+                                                      initialData: {
+                                                        'description':
+                                                            service['serviceDescription'],
+                                                        'contactNumber':
+                                                            service['contactNumber'],
+                                                        'serviceTags':
+                                                            service['serviceTags'],
+                                                        'providerName':
+                                                            service['providerName'],
+                                                        'address':
+                                                            service['address'],
+                                                        'categoryName':
+                                                            service['categoryName'],
+                                                        'serviceType':
+                                                            service['serviceType'],
+                                                        'serviceImage':
+                                                            service['serviceImage'],
+                                                      },
+                                                    ),
+                                              ),
+                                            ).then((value) {
+                                              if (value == true) {
+                                                // Refresh the services list if update was successful
+                                                fetchServices();
+                                              }
+                                            });
+                                          },
+                                        ),
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed:
+                                              () => confirmDelete(
+                                                service['serviceId'],
+                                              ),
+                                        ),
+                                      ],
                                     ),
-                                    child: Text(
-                                      service['categoryName'] ?? 'N/A',
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+
+                                // Provider Name
+                                Text(
+                                  service['providerName'] ?? 'N/A',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+
+                                // Description
+                                Text(
+                                  service['serviceDescription'] ??
+                                      'No description',
+                                  style: TextStyle(color: Colors.grey[600]),
+                                ),
+                                SizedBox(height: 12),
+
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.star,
+                                      color: Colors.amber,
+                                      size: 20,
+                                    ),
+                                    Text(
+                                      ' ${(service['serviceRating']?['averageRating'] ?? 0).toStringAsFixed(1)}',
                                       style: TextStyle(
-                                        color: AppColors.primary,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-
-                                  // Edit and Delete Buttons
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.edit,
-                                          color: Colors.blue,
-                                        ),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder:
-                                                  (
-                                                    context,
-                                                  ) => update_service.UpdateServiceScreen(
-                                                    serviceId:
-                                                        service['serviceId'],
-                                                    companyId: widget.companyId,
-                                                    initialData: {
-                                                      'description':
-                                                          service['serviceDescription'],
-                                                      'contactNumber':
-                                                          service['contactNumber'],
-                                                      'serviceTags':
-                                                          service['serviceTags'],
-                                                      'providerName':
-                                                          service['providerName'],
-                                                      'address':
-                                                          service['address'],
-                                                      'categoryName':
-                                                          service['categoryName'],
-                                                      'serviceType':
-                                                          service['serviceType'],
-                                                      'serviceImage':
-                                                          service['serviceImage'],
-                                                    },
-                                                  ),
-                                            ),
-                                          ).then((value) {
-                                            if (value == true) {
-                                              // Refresh the services list if update was successful
-                                              fetchServices();
-                                            }
-                                          });
-                                        },
-                                      ),
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                        onPressed:
-                                            () => confirmDelete(
-                                              service['serviceId'],
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 6),
-
-                              // Provider Name
-                              Text(
-                                service['providerName'] ?? 'N/A',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 8),
-
-                              // Description
-                              Text(
-                                service['serviceDescription'] ??
-                                    'No description',
-                                style: TextStyle(color: Colors.grey[600]),
-                              ),
-                              SizedBox(height: 12),
-
-                              // Contact and Address
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  Icon(
-                                    Icons.phone,
-                                    size: 16,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(service['contactNumber'] ?? 'N/A'),
-                                  SizedBox(width: 16),
-                                  Icon(
-                                    Icons.location_on,
-                                    size: 16,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      service['address'] ?? 'N/A',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                    Text(
+                                      ' (${service['serviceRating']?['totalRatings'] ?? 0})',
+                                      style: TextStyle(color: Colors.grey),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              SizedBox(height: 8),
-
-                              // Tags
-                              if (service['serviceTags'] != null)
-                                Wrap(
-                                  spacing: 4,
-                                  children:
-                                      (service['serviceTags'] as String)
-                                          .split(' ')
-                                          .map(
-                                            (tag) => Chip(
-                                              label: Text(
-                                                tag,
-                                                style: TextStyle(fontSize: 12),
-                                              ),
-                                              materialTapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                            ),
-                                          )
-                                          .toList(),
+                                  ],
                                 ),
-                            ],
+                                SizedBox(height: 8),
+
+                                // Contact and Address
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Icon(
+                                      Icons.phone,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Text(service['contactNumber'] ?? 'N/A'),
+                                    SizedBox(width: 16),
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        service['address'] ?? 'N/A',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 8),
+
+                                // Tags
+                                if (service['serviceTags'] != null)
+                                  Wrap(
+                                    spacing: 4,
+                                    children:
+                                        (service['serviceTags'] as String)
+                                            .split(' ')
+                                            .map(
+                                              (tag) => Chip(
+                                                label: Text(
+                                                  tag,
+                                                  style: TextStyle(
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                                materialTapTargetSize:
+                                                    MaterialTapTargetSize
+                                                        .shrinkWrap,
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

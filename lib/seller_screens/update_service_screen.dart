@@ -169,6 +169,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
             children: [
               // Image Card
               Card(
+                color: Colors.grey[50],
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -207,6 +208,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
 
               // Service Details Card
               Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),

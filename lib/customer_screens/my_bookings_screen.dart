@@ -64,6 +64,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       }
     } catch (e) {
       ScaffoldMessenger.of(
+        // ignore: use_build_context_synchronously
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));
       setState(() => isLoading = false);
@@ -239,6 +240,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
 
   Widget _buildBookingShimmer() {
     return Card(
+      color: Colors.white,
       margin: EdgeInsets.only(bottom: 16),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
@@ -321,6 +323,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 isLoading
                     ? ListView.builder(
                       padding: EdgeInsets.all(16),
+
                       itemCount: 4,
                       itemBuilder: (context, index) => _buildBookingShimmer(),
                     )
@@ -332,7 +335,8 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       itemBuilder: (context, index) {
                         final booking = bookings[index];
                         return Card(
-                          margin: EdgeInsets.only(bottom: 0),
+                          color: Colors.white,
+                          margin: EdgeInsets.only(bottom: 10),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

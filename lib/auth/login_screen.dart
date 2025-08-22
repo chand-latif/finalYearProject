@@ -195,6 +195,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   // Logo and Welcome Card
                   Card(
+                    color: Colors.white,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
@@ -234,6 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   // Login Form Card
                   Card(
+                    color: Colors.white,
                     elevation: 2,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),

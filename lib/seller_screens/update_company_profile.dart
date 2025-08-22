@@ -585,6 +585,7 @@ class _UpdateCompanyProfileScreenState
           children: [
             // Profile Images Card
             Card(
+              color: Colors.white,
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -628,6 +629,7 @@ class _UpdateCompanyProfileScreenState
             Form(
               key: _formKey,
               child: Card(
+                color: Colors.white,
                 elevation: 2,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -708,6 +710,7 @@ class _UpdateCompanyProfileScreenState
 
             // Working Hours Card with Update Button
             Card(
+              color: Colors.white,
               elevation: 2,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
