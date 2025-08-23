@@ -41,68 +41,62 @@ class _StartupScreenState extends State<StartupScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
+    // Add delay to show animation
+    await Future.delayed(Duration(seconds: 2));
+
+    if (!mounted) return;
+
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
 
     if (token == null) {
-      // No token found, navigate to login/home
-      Navigator.pushNamed(context, '/home');
+      Navigator.pushReplacementNamed(context, '/home');
       return;
     }
 
-    // Token exists — get user info
-    final response = await http.get(
-      Uri.parse("https://fixease.pk/api/User/GetUserInformation"),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse("https://fixease.pk/api/User/GetUserInformation"),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final userType = data['data']['userType'];
-      final companyCreated = data['data']['isCompanyProfileExist'];
-      // final userId = data['data']['userId'];
+      if (!mounted) return;
 
-      if (userType == 'Customer') {
-        // Navigator.pushAndRemoveUntil(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => CustomerHome()),
-        //   (Route<dynamic> route) => false,
-        // );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final userType = data['data']['userType'];
+        final companyCreated = data['data']['isCompanyProfileExist'];
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => CustomerHome()),
-        );
-      } else if (userType == 'Seller') {
-        // Navigator.pushAndRemoveUntil(
-        //   context,
-        //   MaterialPageRoute(builder: (context) => ServiceProviderHome()),
-        //   (Route<dynamic> route) => false,
-        // );
-        if (companyCreated == false) {
+        if (userType == 'Customer') {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder:
-                  (context) => CreateCompanyProfileScreen(
-                    userID: data['data']['userId'],
-                  ),
-            ),
+            MaterialPageRoute(builder: (_) => CustomerHome()),
           );
-        } else {
-          Navigator.pushNamed(context, '/sellerHome');
+        } else if (userType == 'Seller') {
+          if (companyCreated == false) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) => CreateCompanyProfileScreen(
+                      userID: data['data']['userId'],
+                    ),
+              ),
+            );
+          } else {
+            Navigator.pushReplacementNamed(context, '/sellerHome');
+          }
         }
-
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(builder: (_) => ServiceProviderHome()),
-        // );
+      } else {
+        Navigator.pushReplacementNamed(context, '/home');
       }
-    } else {
-      Navigator.pushNamed(context, '/home');
+    } catch (e) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home');
+      }
     }
   }
 
@@ -118,10 +112,10 @@ class _StartupScreenState extends State<StartupScreen>
             children: [
               // App Logo
               Image.asset(
-                'assets/logo.png', // Ensure you have a logo in assets folder
-                width: 120,
+                'assets/FixEasy.png', // Ensure you have a logo in assets folder
+                width: 220,
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 40),
               // App Tagline
               Text(
                 'Your Home Service Partner',

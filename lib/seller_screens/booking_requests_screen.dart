@@ -22,6 +22,7 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
   bool isUpdatingStatus = false;
   int? updatingBookingId;
   String? currentAction; // Track which action is being performed
+  String? selectedStatus; // Add this state variable
 
   @override
   void initState() {
@@ -29,7 +30,7 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
     fetchBookings();
   }
 
-  Future<void> fetchBookings() async {
+  Future<void> fetchBookings([String? status]) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -37,7 +38,7 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
       if (token == null) throw Exception('No auth token found');
 
       final url = Uri.parse(
-        'https://fixease.pk/api/BookingService/GetAllBookings',
+        'https://fixease.pk/api/BookingService/GetAllBookings${status != null ? '?status=$status' : ''}',
       );
 
       final response = await http.get(
@@ -232,6 +233,54 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
     );
   }
 
+  Widget _buildStatusButton(Map<String, dynamic> booking) {
+    if (booking['status'] == 'Pending' ||
+        booking['status'] == 'InProgress' ||
+        booking['status'] == 'Completed') {
+      return Container(); // Return empty container for actionable statuses
+    }
+
+    String statusText = booking['status'] ?? 'Unknown';
+    Color statusColor;
+
+    switch (statusText.toLowerCase()) {
+      case 'accept':
+        statusColor = Colors.orange;
+        statusText = 'Waiting for Customer Confirmation';
+        break;
+      case 'finished':
+        statusColor = Colors.green;
+        statusText = 'Service Completed';
+        break;
+      case 'reject':
+        statusColor = Colors.red;
+        statusText = 'Booking Rejected';
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 16),
+      margin: EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Text(
+        statusText,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: statusColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -243,7 +292,39 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
       ),
       body: Column(
         children: [
-          // Bookings List
+          // Add Status Filter Dropdown
+          Padding(
+            padding: EdgeInsets.fromLTRB(15, 15, 15, 7),
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: DropdownButton<String>(
+                value: selectedStatus,
+                isExpanded: true,
+                hint: Text('Filter by status'),
+                underline: SizedBox(),
+                items: [
+                  DropdownMenuItem(value: null, child: Text('All')),
+                  DropdownMenuItem(value: 'Pending', child: Text('Pending')),
+                  DropdownMenuItem(
+                    value: 'InProgress',
+                    child: Text('In Progress'),
+                  ),
+                  DropdownMenuItem(value: 'Accept', child: Text('Accepted')),
+                  DropdownMenuItem(value: 'Reject', child: Text('Rejected')),
+                ],
+                onChanged: (value) {
+                  setState(() => selectedStatus = value);
+                  fetchBookings(value);
+                },
+              ),
+            ),
+          ),
+
+          // Existing Bookings List
           Expanded(
             child:
                 isLoading
@@ -364,28 +445,28 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
-                                          Container(
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: 8,
-                                              vertical: 4,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: AppColors.primary
-                                                  .withOpacity(0.1),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              booking['status'] == 'Accept'
-                                                  ? 'Authorizing'
-                                                  : (booking['status'] ??
-                                                      'Pending'),
-                                              style: TextStyle(
-                                                color: AppColors.primary,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
+                                          // Container(
+                                          //   padding: EdgeInsets.symmetric(
+                                          //     horizontal: 8,
+                                          //     vertical: 4,
+                                          //   ),
+                                          //   decoration: BoxDecoration(
+                                          //     color: AppColors.primary
+                                          //         .withOpacity(0.1),
+                                          //     borderRadius:
+                                          //         BorderRadius.circular(4),
+                                          //   ),
+                                          //   child: Text(
+                                          //     booking['status'] == 'Accept'
+                                          //         ? 'Authorizing'
+                                          //         : (booking['status'] ??
+                                          //             'Pending'),
+                                          //     style: TextStyle(
+                                          //       color: AppColors.primary,
+                                          //       fontWeight: FontWeight.bold,
+                                          //     ),
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                       SizedBox(height: 8),
@@ -401,8 +482,8 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                         children: [
                                           Icon(
                                             Icons.location_on,
-                                            size: 16,
-                                            color: Colors.grey,
+                                            size: 20,
+                                            color: AppColors.primary,
                                           ),
                                           SizedBox(width: 4),
                                           Expanded(
@@ -421,8 +502,8 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                         children: [
                                           Icon(
                                             Icons.schedule,
-                                            size: 16,
-                                            color: Colors.grey,
+                                            size: 20,
+                                            color: AppColors.primary,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
@@ -438,8 +519,8 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                         children: [
                                           Icon(
                                             Icons.category,
-                                            size: 16,
-                                            color: Colors.grey,
+                                            size: 20,
+                                            color: AppColors.primary,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
@@ -606,6 +687,11 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                             ),
                                           ),
                                         ),
+
+                                      if (booking['status'] != 'Pending' &&
+                                          booking['status'] != 'InProgress' &&
+                                          booking['status'] != 'Completed')
+                                        _buildStatusButton(booking),
                                     ],
                                   ),
                                 ),

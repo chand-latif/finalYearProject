@@ -253,7 +253,7 @@ class _CreateCompanyProfileScreenState
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushNamed(context, '/sellerHome');
+        Navigator.pushReplacementNamed(context, '/sellerHome');
       } else {
         // Parse error response if possible
         String errorMessage = 'Error: ${response.statusCode}';

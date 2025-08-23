@@ -88,207 +88,310 @@ class ServiceDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category Badge
+                  Text(
+                    service['providerName'] ?? 'N/A',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       service['categoryName'] ?? 'N/A',
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
+                  SizedBox(height: 24),
 
+                  // Description Card
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Description',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          service['serviceDescription'] ??
+                              'No description available',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[800],
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(height: 16),
 
-                  // Provider Name
-                  Text(
-                    service['providerName'] ?? 'N/A',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // Description
-                  Text(
-                    'Description',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    service['serviceDescription'] ?? 'No description available',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                      height: 1.5,
+                  // Contact Information Card
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
                     ),
-                  ),
-
-                  SizedBox(height: 24),
-
-                  // Contact Information
-                  Text(
-                    'Contact Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 12),
-                  ListTile(
-                    leading: Icon(Icons.phone, color: AppColors.primary),
-                    title: Text(service['contactNumber'] ?? 'N/A'),
-                    contentPadding: EdgeInsets.zero,
-                    onTap:
-                        () => _makePhoneCall(context, service['contactNumber']),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.location_on, color: AppColors.primary),
-                    title: Text(service['address'] ?? 'N/A'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  SizedBox(height: 8),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: Icon(Icons.map),
-                      label: Text('View Location on Map'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Information',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
-                      onPressed: () => _openLocationOnMap(context),
-                    ),
-                  ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 12),
+                            TextButton(
+                              onPressed:
+                                  () => _makePhoneCall(
+                                    context,
+                                    service['contactNumber'],
+                                  ),
 
-                  // Service Tags
-                  if (service['serviceTags'] != null) ...[
-                    SizedBox(height: 24),
-                    Text(
-                      'Tags',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children:
-                          (service['serviceTags'] as String)
-                              .split(' ')
-                              .map(
-                                (tag) => Chip(
-                                  label: Text(tag),
-                                  backgroundColor: Colors.grey[200],
-                                ),
-                              )
-                              .toList(),
-                    ),
-                  ],
-
-                  // Ratings & Reviews Section
-                  SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Ratings & Reviews',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if ((service['serviceReview'] as List).length > 1)
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => ServiceReviewsScreen(
-                                      reviews: service['serviceReview'],
-                                      averageRating:
-                                          service['serviceRating']['averageRating'] ??
-                                          0,
-                                      totalRatings:
-                                          service['serviceRating']['totalRatings'] ??
-                                          0,
-                                    ),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                alignment: Alignment.centerLeft,
                               ),
-                            );
-                          },
-                          child: Text('See all'),
+                              child: Text(
+                                service['contactNumber'] ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.blue[800],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  // Rating Summary
-                  Row(
-                    children: [
-                      Text(
-                        '${(service['serviceRating']?['averageRating'] ?? 0).toStringAsFixed(1)}',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                service['address'] ?? 'N/A',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: List.generate(5, (index) {
-                              return Icon(
-                                index <
-                                        (service['serviceRating']?['averageRating'] ??
-                                            0)
-                                    ? Icons.star
-                                    : Icons.star_border,
-                                color: Colors.amber,
-                                size: 20,
-                              );
-                            }),
+                        SizedBox(height: 12),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            icon: Icon(Icons.map),
+                            label: Text('View Location on Map'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed: () => _openLocationOnMap(context),
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            '${service['serviceRating']?['totalRatings'] ?? 0} ratings',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
 
-                  // Show first review if exists
-                  if ((service['serviceReview'] as List).isNotEmpty) ...[
+                  // Service Tags Card
+                  if (service['serviceTags'] != null) ...[
                     SizedBox(height: 16),
                     Container(
-                      padding: EdgeInsets.all(12),
+                      padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            service['serviceReview'][0]['userName'] ??
-                                'Anonymous',
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                            'Tags',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[600],
+                            ),
                           ),
-                          SizedBox(height: 8),
-                          Text(service['serviceReview'][0]['comment'] ?? ''),
+                          SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children:
+                                (service['serviceTags'] as String)
+                                    .split(' ')
+                                    .map(
+                                      (tag) => Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 6,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[100],
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
+                                        child: Text(tag),
+                                      ),
+                                    )
+                                    .toList(),
+                          ),
                         ],
                       ),
                     ),
                   ],
+
+                  // Ratings & Reviews Card
+                  SizedBox(height: 16),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Ratings & Reviews',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            if ((service['serviceReview'] as List).length > 1)
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder:
+                                          (context) => ServiceReviewsScreen(
+                                            reviews: service['serviceReview'],
+                                            averageRating:
+                                                service['serviceRating']['averageRating'] ??
+                                                0,
+                                            totalRatings:
+                                                service['serviceRating']['totalRatings'] ??
+                                                0,
+                                          ),
+                                    ),
+                                  );
+                                },
+                                child: Text('See all'),
+                              ),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        // Rating Summary
+                        Row(
+                          children: [
+                            Text(
+                              '${(service['serviceRating']?['averageRating'] ?? 0).toStringAsFixed(1)}',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: List.generate(5, (index) {
+                                    return Icon(
+                                      index <
+                                              (service['serviceRating']?['averageRating'] ??
+                                                  0)
+                                          ? Icons.star
+                                          : Icons.star_border,
+                                      color: Colors.amber,
+                                      size: 20,
+                                    );
+                                  }),
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  '${service['serviceRating']?['totalRatings'] ?? 0} ratings',
+                                  style: TextStyle(color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+
+                        // Show first review if exists
+                        if ((service['serviceReview'] as List).isNotEmpty) ...[
+                          SizedBox(height: 16),
+                          Container(
+                            padding: EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  service['serviceReview'][0]['userName'] ??
+                                      'Anonymous',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  service['serviceReview'][0]['comment'] ?? '',
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

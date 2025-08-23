@@ -6,6 +6,7 @@ import 'update_service_screen.dart' as update_service;
 import 'nav_bar_seller.dart';
 import 'package:shimmer/shimmer.dart';
 import 'seller_service_details_screen.dart';
+import 'create_service.dart';
 
 class MyServicesScreen extends StatefulWidget {
   final companyId;
@@ -407,6 +408,22 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                 },
               ),
       bottomNavigationBar: NavBarSeller(currentIndex: 2),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => CreateServiceScreen(companyID: widget.companyId),
+            ),
+          ).then(
+            (_) => fetchServices(),
+          ); // Refresh list after creating new service
+        },
+        label: Text('Add Service'),
+        icon: Icon(Icons.add),
+        backgroundColor: AppColors.primary,
+      ),
     );
   }
 }

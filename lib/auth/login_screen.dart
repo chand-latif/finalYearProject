@@ -6,6 +6,7 @@ import 'dart:convert';
 import '../verfication_OTP.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fix_easy/seller_screens/create_company_profile.dart';
+import 'package:fix_easy/seller_screens/seller_home.dart' as seller_home;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -64,7 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           );
         } else {
-          Navigator.pushNamed(context, '/sellerHome');
+          Navigator.pushReplacementNamed(context, '/sellerHome');
         }
       }
     } else {
@@ -205,12 +206,12 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Column(
                         children: [
                           Image.asset(
-                            'assets/logo.png',
-                            width: 150,
-                            height: 150,
+                            'assets/FixEasy.png',
+                            width: 180,
+                            height: 180,
                             fit: BoxFit.contain,
                           ),
-                          SizedBox(height: 16),
+                          SizedBox(height: 0),
                           Text(
                             'Welcome Back!',
                             style: TextStyle(

@@ -1,5 +1,3 @@
-// import 'dart:nativewrappers/_internal/vm_shared/lib/compact_hash.dart';
-
 import 'package:fix_easy/seller_screens/create_service.dart';
 import 'package:fix_easy/seller_screens/my_services_screen.dart';
 import 'package:fix_easy/theme.dart';
@@ -8,6 +6,8 @@ import 'nav_bar_seller.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'booking_request_details_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class ServiceProviderHome extends StatefulWidget {
   const ServiceProviderHome({super.key});
@@ -17,47 +17,119 @@ class ServiceProviderHome extends StatefulWidget {
 }
 
 class _ServiceProviderHomeState extends State<ServiceProviderHome> {
+  // Stats variables from API
+  int pendingBookings = 0;
+  int acceptedBookings = 0;
+  int inProgressBookings = 0;
+  int finishedBookings = 0;
+  double averageRating = 0.0;
+  int totalRatings = 0;
+  int? companyId;
+  bool isLoading = true;
+  List<Map<String, dynamic>> recentBookings = [];
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     fetchUserInfo();
+    fetchStats();
+    fetchRecentBookings();
   }
 
-  // Sample data - Replace with actual data from your API
-  int requestedBookings = 5;
-  int acceptedBookings = 12;
-  int cancelledBookings = 2;
-  int completedJobs = 28;
-  double rating = 4.8;
-  int? companyId;
+  Future<void> fetchStats() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
 
-  final List<Map<String, dynamic>> recentBookings = [
-    {
-      'customerName': 'Ahmad Ali',
-      'service': 'Plumbing',
-      'time': '10:00 AM',
-      'date': 'Today',
-      'status': 'pending',
-      'amount': 1500.0,
-    },
-    {
-      'customerName': 'Sarah Khan',
-      'service': 'Electrical Work',
-      'time': '2:00 PM',
-      'date': 'Today',
-      'status': 'accepted',
-      'amount': 2200.0,
-    },
-    {
-      'customerName': 'Usman Sheikh',
-      'service': 'AC Repair',
-      'time': '11:00 AM',
-      'date': 'Tomorrow',
-      'status': 'pending',
-      'amount': 3000.0,
-    },
-  ];
+      final response = await http.get(
+        Uri.parse(
+          'https://fixease.pk/api/BookingService/getServiceProviderStats',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded'] && data['data'] != null) {
+          setState(() {
+            pendingBookings = data['data']['pending'] ?? 0;
+            acceptedBookings = data['data']['accepted'] ?? 0;
+            inProgressBookings = data['data']['inProgress'] ?? 0;
+            finishedBookings = data['data']['finished'] ?? 0;
+            isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching stats: $e');
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> fetchRecentBookings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.get(
+        Uri.parse('https://fixease.pk/api/BookingService/GetAllBookings'),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['data'] != null) {
+          setState(() {
+            // Take only the first 3 bookings
+            recentBookings = List<Map<String, dynamic>>.from(
+              (data['data'] as List).take(3),
+            );
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching recent bookings: $e');
+    }
+  }
+
+  Future<void> updateBookingStatus(int bookingId, String status) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.put(
+        Uri.parse(
+          'https://fixease.pk/api/BookingService/SetBookingStatus?BookingId=$bookingId&Status=$status',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Status updated successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          // Refresh data
+          fetchStats();
+          fetchRecentBookings();
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating booking: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   Future<void> fetchUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
@@ -84,30 +156,42 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       setState(() {
         companyId = data['data']['companyId'];
       });
+
+      // Then fetch company services to calculate rating
+      final servicesResponse = await http.get(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyServices/getListOfPublishedCompanyServices?CompanyId=$companyId',
+        ),
+      );
+
+      if (servicesResponse.statusCode == 200) {
+        final servicesData = json.decode(servicesResponse.body);
+        final services = List<Map<String, dynamic>>.from(servicesData['data']);
+
+        int totalRatings = 0;
+        double totalRatingSum = 0;
+
+        for (var service in services) {
+          final serviceRating = service['serviceRating'];
+          if (serviceRating != null) {
+            totalRatings += serviceRating['totalRatings'] as int;
+            totalRatingSum +=
+                (serviceRating['averageRating'] as num) *
+                serviceRating['totalRatings'];
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            this.totalRatings = totalRatings;
+            this.averageRating =
+                totalRatings > 0 ? totalRatingSum / totalRatings : 0.0;
+          });
+        }
+      }
     } else {
       print('api call error');
     }
-  }
-
-  void _onBookingAction(String action, int index) {
-    setState(() {
-      if (action == 'accept') {
-        recentBookings[index]['status'] = 'accepted';
-        acceptedBookings++;
-        requestedBookings--;
-      } else if (action == 'reject') {
-        recentBookings[index]['status'] = 'cancelled';
-        cancelledBookings++;
-        requestedBookings--;
-      }
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Booking ${action}ed successfully'),
-        backgroundColor: action == 'accept' ? Colors.green : Colors.red,
-      ),
-    );
   }
 
   @override
@@ -117,25 +201,19 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppColors.primary,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
-        ),
-        title: Text(
-          'Service Provider Home',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 20,
-            // fontWeight: FontWeight.w400,
-          ),
+        centerTitle: true, // Add this
+        title: Image.asset(
+          'assets/FixEasy.png',
+          height: 100, // Adjust height as needed
+          fit: BoxFit.contain,
         ),
         actions: [
+          // Profile icon that navigates to profile
           IconButton(
-            icon: Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () {},
+            icon: Icon(Icons.person_outline, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, '/sellerProfile'),
           ),
         ],
-        centerTitle: false,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(20),
@@ -146,7 +224,6 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
             Container(
               width: double.infinity,
               padding: EdgeInsets.symmetric(vertical: 30, horizontal: 15),
-
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Colors.cyan, Colors.teal],
@@ -214,7 +291,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 children: [
                   Text(
                     'Service Management',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 10),
                   Row(
@@ -313,39 +390,10 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
 
             SizedBox(height: 16),
 
-            Row(
-              children: [
-                Expanded(
-                  child: _buildBookingCard(
-                    'Requested Bookings',
-                    requestedBookings.toString(),
-                    Icons.schedule,
-                    Colors.orange,
-                    () => _navigateToBookings('requested'),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildBookingCard(
-                    'Accepted Bookings',
-                    acceptedBookings.toString(),
-                    Icons.check_circle,
-                    Colors.green,
-                    () => _navigateToBookings('accepted'),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildBookingCard(
-                    'Cancelled Bookings',
-                    cancelledBookings.toString(),
-                    Icons.cancel,
-                    Colors.red,
-                    () => _navigateToBookings('cancelled'),
-                  ),
-                ),
-              ],
-            ),
+            if (isLoading)
+              _buildBookingOverviewShimmer()
+            else
+              _buildBookingOverview(),
 
             SizedBox(height: 20),
 
@@ -355,16 +403,16 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 Expanded(
                   child: _buildStatCard(
                     'Completed Jobs',
-                    completedJobs.toString(),
-                    Icons.task_alt,
+                    finishedBookings.toString(),
+                    Icons.done_all, // Changed icon to done_all
                     Colors.teal,
                   ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
                   child: _buildStatCard(
-                    'Rating',
-                    rating.toString(),
+                    'Rating ($totalRatings)',
+                    averageRating.toStringAsFixed(1),
                     Icons.star,
                     Colors.amber,
                   ),
@@ -372,7 +420,7 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
               ],
             ),
 
-            SizedBox(width: 24),
+            SizedBox(height: 24),
 
             // Recent Bookings
             Text(
@@ -386,15 +434,9 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
 
             SizedBox(height: 16),
 
-            ...recentBookings.asMap().entries.map((entry) {
-              int index = entry.key;
-              Map<String, dynamic> booking = entry.value;
-              return _buildBookingItem(booking, index);
-            }).toList(),
+            _buildRecentBookingsList(),
 
             SizedBox(height: 24),
-
-            SizedBox(height: 20),
           ],
         ),
       ),
@@ -499,119 +541,291 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
     );
   }
 
-  Widget _buildBookingItem(Map<String, dynamic> booking, int index) {
-    Color statusColor =
-        booking['status'] == 'pending'
-            ? Colors.orange
-            : booking['status'] == 'accepted'
-            ? Colors.green
-            : Colors.red;
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: Offset(0, 2),
+  Widget _buildBookingOverview() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildBookingCard(
+            'Pending',
+            pendingBookings.toString(),
+            Icons.schedule,
+            Colors.orange,
+            () => Navigator.pushNamed(context, '/bookingRequests'),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: statusColor.withOpacity(0.15),
-                child: Icon(
-                  booking['status'] == 'pending'
-                      ? Icons.schedule
-                      : booking['status'] == 'accepted'
-                      ? Icons.check
-                      : Icons.close,
-                  color: statusColor,
-                  size: 20,
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: _buildBookingCard(
+            'In Progress',
+            inProgressBookings.toString(),
+            Icons.engineering,
+            Colors.blue,
+            () => Navigator.pushNamed(context, '/bookingRequests'),
+          ),
+        ),
+        SizedBox(width: 12),
+        Expanded(
+          child: _buildBookingCard(
+            'Accepted',
+            acceptedBookings.toString(),
+            Icons.check_circle_outline,
+            Colors.green,
+            () => Navigator.pushNamed(context, '/bookingRequests'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBookingOverviewShimmer() {
+    return Row(
+      children:
+          List.generate(
+            3,
+            (index) => Expanded(
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: index == 1 ? 12 : 0),
+                padding: EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 15,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Container(width: 40, height: 24, color: Colors.white),
+                      SizedBox(height: 4),
+                      Container(width: 60, height: 12, color: Colors.white),
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(width: 12),
-              Expanded(
+            ),
+          ).toList(),
+    );
+  }
+
+  Widget _buildRecentBookingsList() {
+    if (recentBookings.isEmpty) {
+      return Center(child: Text('No recent bookings'));
+    }
+
+    return Column(
+      children:
+          recentBookings.map((booking) {
+            return GestureDetector(
+              onTap: () {
+                // Replace named route navigation with MaterialPageRoute
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) => BookingRequestDetailsScreen(
+                          booking: booking,
+                          onStatusChanged: () {
+                            // Refresh data when returning from details
+                            fetchStats();
+                            fetchRecentBookings();
+                          },
+                        ),
+                  ),
+                );
+              },
+              child: Card(
+                color: Colors.white,
+                margin: EdgeInsets.only(bottom: 12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      booking['customerName'],
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                    Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                booking['customerName'] ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            booking['description'] ?? 'No description',
+                            style: TextStyle(color: Colors.grey[600]),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.schedule,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  'Proposed: ${formatDateTime(booking['customerProposedTime'])}',
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.category,
+                                size: 16,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                booking['category'] ?? 'N/A',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Status indicator - similar to booking requests but without action buttons
+                          if (booking['status'] != null)
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.symmetric(vertical: 12),
+                              margin: EdgeInsets.only(top: 12),
+                              decoration: BoxDecoration(
+                                color: _getStatusColor(
+                                  booking['status'],
+                                ).withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey[200]!),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    _getStatusIcon(booking['status']),
+                                    color: _getStatusColor(booking['status']),
+                                    size: 18,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    _getStatusText(booking['status']),
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: _getStatusColor(booking['status']),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      '${booking['service']} • ${booking['date']} ${booking['time']}',
-                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
-              Text(
-                'PKR ${booking['amount'].toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-          if (booking['status'] == 'pending') ...[
-            SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _onBookingAction('reject', index),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text('Reject'),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _onBookingAction('accept', index),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: Text('Accept'),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
+            );
+          }).toList(),
     );
   }
 
-  void _navigateToBookings(String type) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Navigate to $type bookings')));
+  String _getStatusText(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return 'Pending Approval';
+      case 'accept':
+        return 'Waiting for Customer Confirmation';
+      case 'inprogress':
+        return 'Work in Progress';
+      case 'completed':
+        return 'Waiting for Customer Approval';
+      case 'finished':
+        return 'Service Completed';
+      case 'reject':
+        return 'Booking Rejected';
+      default:
+        return status?.toUpperCase() ?? 'N/A';
+    }
+  }
+
+  Color _getStatusColor(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'inprogress':
+        return Colors.blue;
+      case 'completed':
+        return Colors.green;
+      case 'reject':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String? status) {
+    switch (status?.toLowerCase()) {
+      case 'pending':
+        return Icons.schedule;
+      case 'inprogress':
+        return Icons.engineering;
+      case 'completed':
+        return Icons.check_circle;
+      case 'reject':
+        return Icons.cancel;
+      default:
+        return Icons.circle;
+    }
+  }
+
+  String formatDateTime(dynamic dateTime) {
+    if (dateTime == null) return 'N/A';
+    try {
+      DateTime dt;
+      if (dateTime is String) {
+        dt = DateTime.parse(dateTime);
+      } else if (dateTime is DateTime) {
+        dt = dateTime;
+      } else {
+        return dateTime.toString();
+      }
+      return "${dt.day}/${dt.month}/${dt.year} ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return dateTime.toString();
+    }
   }
 }

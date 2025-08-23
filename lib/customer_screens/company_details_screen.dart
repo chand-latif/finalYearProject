@@ -113,32 +113,39 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                   onPressed: () => Navigator.pop(context),
                 ),
                 flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Image.network(
-                        'https://fixease.pk${widget.company['companyLogo'] ?? ''}',
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) => Container(
-                              color: Colors.grey[300],
-                              child: Icon(Icons.error),
+                  background: GestureDetector(
+                    onTap:
+                        () => ImageViewer.showFullScreenImage(
+                          context,
+                          'https://fixease.pk${widget.company['companyLogo'] ?? ''}',
+                        ),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Image.network(
+                          'https://fixease.pk${widget.company['companyLogo'] ?? ''}',
+                          fit: BoxFit.cover,
+                          errorBuilder:
+                              (context, error, stackTrace) => Container(
+                                color: Colors.grey[300],
+                                child: Icon(Icons.error),
+                              ),
+                        ),
+                        // Add gradient overlay for better text visibility
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withOpacity(0.7),
+                                Colors.transparent,
+                              ],
                             ),
-                      ),
-                      // Add gradient overlay for better text visibility
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withOpacity(0.7),
-                              Colors.transparent,
-                            ],
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   title: Text(
                     widget.company['companyName'] ?? 'Company',

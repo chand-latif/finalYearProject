@@ -294,6 +294,89 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
     });
   }
 
+  Future<void> deleteUserAndCompany() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.delete(
+        Uri.parse('https://fixease.pk/api/User/DeleteUser?UserId=$userId'),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        await prefs.remove('auth_token'); // Clear token
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      } else {
+        throw Exception('Failed to delete user');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> deleteCompanyProfile() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.delete(
+        Uri.parse(
+          'https://fixease.pk/api/CompanyProfile/DeleteCompanyProfile?CompanyId=$companyId',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        await prefs.remove('auth_token'); // Clear token
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
+      } else {
+        throw Exception('Failed to delete company profile');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  Future<void> showDeleteConfirmationDialog(String type) async {
+    return showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text(
+            type == 'both'
+                ? 'Are you sure you want to delete your user account and company profile? This action cannot be undone.'
+                : 'Are you sure you want to delete your company profile? This action cannot be undone.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (type == 'both') {
+                  deleteUserAndCompany();
+                } else {
+                  deleteCompanyProfile();
+                }
+              },
+              child: Text('Delete', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -304,6 +387,40 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
             expandedHeight: 200,
             pinned: true,
             backgroundColor: AppColors.primary,
+            actions: [
+              PopupMenuButton<String>(
+                icon: Icon(Icons.more_vert, color: Colors.white),
+                onSelected: (value) {
+                  if (value == 'deleteAll') {
+                    showDeleteConfirmationDialog('both');
+                  } else if (value == 'deleteCompany') {
+                    showDeleteConfirmationDialog('company');
+                  }
+                },
+                itemBuilder:
+                    (BuildContext context) => [
+                      PopupMenuItem(
+                        value: 'deleteAll',
+                        child: ListTile(
+                          leading: Icon(
+                            Icons.delete_forever,
+                            color: Colors.red,
+                          ),
+                          title: Text('Delete Account & Company'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'deleteCompany',
+                        child: ListTile(
+                          leading: Icon(Icons.business, color: Colors.red),
+                          title: Text('Delete Company Only'),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ],
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 decoration: BoxDecoration(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fix_easy/theme.dart';
 import 'update_service_screen.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+// import 'dart:convert';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fix_easy/customer_screens/service_reviews_screen.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
@@ -142,89 +142,155 @@ class SellerServiceDetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    service['providerName'] ?? 'N/A',
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 4),
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       service['categoryName'] ?? 'N/A',
                       style: TextStyle(
                         color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
                       ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Description Card
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Description',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          service['serviceDescription'] ??
+                              'No description available',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[800],
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 16),
-                  Text(
-                    service['providerName'] ?? 'N/A',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    'Description',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    service['serviceDescription'] ?? 'No description available',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[800],
-                      height: 1.5,
+
+                  // Contact Information Card
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey[200]!),
                     ),
-                  ),
-                  SizedBox(height: 24),
-                  Text(
-                    'Contact Information',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(height: 12),
-                  ListTile(
-                    leading: Icon(Icons.phone, color: AppColors.primary),
-                    title: Text(service['contactNumber'] ?? 'N/A'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.location_on, color: AppColors.primary),
-                    title: Text(service['address'] ?? 'N/A'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  if (service['latitude'] != null &&
-                      service['longitude'] != null)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        icon: Icon(Icons.map),
-                        label: Text('View Location on Map'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Contact Information',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[600],
                           ),
                         ),
-                        onPressed: () async {
-                          final lat = service['latitude'];
-                          final lng = service['longitude'];
-                          final url = Uri.parse(
-                            'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
-                          );
-                          if (!await launchUrl(
-                            url,
-                            mode: LaunchMode.externalApplication,
-                          )) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Could not open Google Maps'),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.phone,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 12),
+                            Text(
+                              service['contactNumber'] ?? 'N/A',
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              size: 20,
+                              color: AppColors.primary,
+                            ),
+                            SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                service['address'] ?? 'N/A',
+                                style: TextStyle(fontSize: 15),
                               ),
-                            );
-                          }
-                        },
-                      ),
+                            ),
+                          ],
+                        ),
+                        if (service['latitude'] != null &&
+                            service['longitude'] != null) ...[
+                          SizedBox(height: 12),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: Icon(Icons.map),
+                              label: Text('View Location on Map'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                padding: EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                final lat = service['latitude'];
+                                final lng = service['longitude'];
+                                final url = Uri.parse(
+                                  'https://www.google.com/maps/search/?api=1&query=$lat,$lng',
+                                );
+                                if (!await launchUrl(
+                                  url,
+                                  mode: LaunchMode.externalApplication,
+                                )) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        'Could not open Google Maps',
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
+                  ),
+
+                  // Service Tags Card
                   if (service['serviceTags'] != null) ...[
                     SizedBox(height: 24),
                     Text(
@@ -235,21 +301,30 @@ class SellerServiceDetailsScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      children:
-                          (service['serviceTags'] as String)
-                              .split(' ')
-                              .map(
-                                (tag) => Chip(
-                                  label: Text(tag),
-                                  backgroundColor: Colors.grey[200],
-                                ),
-                              )
-                              .toList(),
+                    Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Wrap(
+                        spacing: 8,
+                        children:
+                            (service['serviceTags'] as String)
+                                .split(' ')
+                                .map(
+                                  (tag) => Chip(
+                                    label: Text(tag),
+                                    backgroundColor: Colors.grey[200],
+                                  ),
+                                )
+                                .toList(),
+                      ),
                     ),
                   ],
-                  // Ratings & Reviews Section
+
+                  // Ratings & Reviews Card
                   SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

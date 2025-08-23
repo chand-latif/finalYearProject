@@ -193,19 +193,19 @@ class _CustomerHomeState extends State<CustomerHome> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: AppColors.primary,
-        leading: IconButton(
-          icon: Icon(Icons.menu, color: Colors.black),
-          onPressed: () {},
+        centerTitle: true, // Add this
+        title: Image.asset(
+          'assets/FixEasy.png',
+          height: 100, // Adjust height as needed
+          fit: BoxFit.contain,
         ),
-        title: Text(
-          'Home/Customer',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
+        actions: [
+          // Profile icon that navigates to profile
+          IconButton(
+            icon: Icon(Icons.person_outline, color: Colors.white),
+            onPressed: () => Navigator.pushNamed(context, '/customerProfile'),
           ),
-        ),
-        centerTitle: false,
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

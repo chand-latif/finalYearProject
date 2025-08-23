@@ -6,7 +6,7 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
-import 'package:image_picker/image_picker.dart';
+// import 'package:image_picker/image_picker.dart';
 
 // Custom class to hold location and formatted address
 class SearchResult {
@@ -29,6 +29,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
   final searchController = TextEditingController();
+  final phoneController = TextEditingController(); // Added phone controller
   DateTime? proposedTime;
   List<File> issueImages = []; // Changed from single File to List<File>
   bool isLoading = false;
@@ -77,14 +78,14 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                     }
                   },
                 ),
-                ListTile(
-                  leading: Icon(Icons.photo_camera, color: AppColors.primary),
-                  title: Text('Take Multiple Photos'),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    _showMultipleCameraDialog();
-                  },
-                ),
+                // ListTile(
+                //   leading: Icon(Icons.photo_camera, color: AppColors.primary),
+                //   title: Text('Take Multiple Photos'),
+                //   onTap: () async {
+                //     Navigator.pop(context);
+                //     _showMultipleCameraDialog();
+                //   },
+                // ),
               ],
             ),
           ),
@@ -507,6 +508,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
         'Latitude': pickedLat.toString(),
         'Longitude': pickedLng.toString(),
         'ProposedTime': proposedTime!.toIso8601String(),
+        'PhoneNumber': phoneController.text, // Pass phone number
       });
 
       // Add multiple images if selected
@@ -590,6 +592,26 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                         validator:
                             (value) =>
                                 value?.isEmpty ?? true ? 'Required' : null,
+                      ),
+                      SizedBox(height: 16),
+                      // Phone number field
+                      TextFormField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.number,
+                        decoration: _buildInputDecoration(
+                          'Phone Number (11 digits)',
+                          Icons.phone,
+                        ),
+                        maxLength: 11,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Phone number required';
+                          }
+                          if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+                            return 'Enter exactly 11 digits';
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(height: 16),
                       buildAddressSearchSection(),

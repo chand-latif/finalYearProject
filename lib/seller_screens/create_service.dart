@@ -686,13 +686,20 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                         TextFormField(
                           controller: contactNumberController,
                           decoration: _buildInputDecoration(
-                            'Contact Number',
+                            'Contact Number (11 digits)',
                             Icons.phone,
                           ),
-                          keyboardType: TextInputType.phone,
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true ? 'Required' : null,
+                          keyboardType: TextInputType.number,
+                          maxLength: 11, // Limit input to 11 characters
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Contact number is required';
+                            }
+                            if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+                              return 'Enter exactly 11 digits';
+                            }
+                            return null;
+                          },
                         ),
                         SizedBox(height: 16),
                         TextFormField(

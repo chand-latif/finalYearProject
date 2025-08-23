@@ -7,6 +7,7 @@ import 'service_review_screen.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
 import 'nav_bar_customer.dart';
 import 'package:shimmer/shimmer.dart';
+import 'customer_booking_details_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);
@@ -63,11 +64,12 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
         throw Exception('Failed to load bookings');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        // ignore: use_build_context_synchronously
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error: $e')));
-      setState(() => isLoading = false);
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -276,6 +278,56 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
+  Widget _buildStatusButton(Map<String, dynamic> booking) {
+    if (booking['status'] == 'Accept' || booking['status'] == 'Completed') {
+      return Container(); // Return empty container for actionable statuses
+    }
+
+    String statusText = booking['status'] ?? 'Unknown';
+    Color statusColor;
+
+    switch (statusText.toLowerCase()) {
+      case 'pending':
+        statusColor = Colors.orange;
+        statusText = 'Pending Seller Approval';
+        break;
+      case 'inprogress':
+        statusColor = Colors.blue;
+        statusText = 'Work In Progress';
+        break;
+      case 'finished':
+        statusColor = Colors.green;
+        statusText = 'Service Completed';
+        break;
+      case 'reject':
+        statusColor = Colors.red;
+        statusText = 'Booking Rejected';
+        break;
+      default:
+        statusColor = Colors.grey;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 16),
+      margin: EdgeInsets.only(top: 16),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey[200]!),
+      ),
+      child: Text(
+        statusText,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: statusColor,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -303,11 +355,14 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                 underline: SizedBox(),
                 items: [
                   DropdownMenuItem(value: null, child: Text('All')),
+
+                  DropdownMenuItem(value: 'Pending', child: Text('Pending')),
                   DropdownMenuItem(
-                    value: 'Completed',
-                    child: Text('Completed'),
+                    value: 'InProgress',
+                    child: Text('InProgress'),
                   ),
-                  DropdownMenuItem(value: 'Finished', child: Text('Finished')),
+                  DropdownMenuItem(value: 'Finished', child: Text('Completed')),
+                  DropdownMenuItem(value: 'Reject', child: Text('Rejected')),
                 ],
                 onChanged: (value) {
                   setState(() => selectedStatus = value);
@@ -334,155 +389,150 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       itemCount: bookings.length,
                       itemBuilder: (context, index) {
                         final booking = bookings[index];
-                        return Card(
-                          color: Colors.white,
-                          margin: EdgeInsets.only(bottom: 10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Add service provider image
-                              // Add service provider image
-                              if (booking['profilePicture'] != null)
-                                GestureDetector(
-                                  onTap:
-                                      () => ImageViewer.showFullScreenImage(
-                                        context,
-                                        'https://fixease.pk${booking['profilePicture']}',
-                                      ),
-                                  child: Container(
-                                    height: 120,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.vertical(
-                                        top: Radius.circular(4),
-                                      ),
-                                      image: DecorationImage(
-                                        image: NetworkImage(
-                                          'https://fixease.pk${booking['profilePicture']}',
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) => CustomerBookingDetailsScreen(
+                                      booking: booking,
+                                      onStatusChanged:
+                                          () => fetchBookings(selectedStatus),
+                                    ),
+                              ),
+                            );
+                          },
+                          child: Card(
+                            color: Colors.white,
+                            margin: EdgeInsets.only(bottom: 10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Add service provider image
+                                // Add service provider image
+                                if (booking['serviceImage'] != null)
+                                  GestureDetector(
+                                    onTap:
+                                        () => ImageViewer.showFullScreenImage(
+                                          context,
+                                          'https://fixease.pk${booking['serviceImage']}',
                                         ),
-                                        fit: BoxFit.cover,
+                                    child: Container(
+                                      height: 120,
+                                      width: double.infinity,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(4),
+                                        ),
+                                        image: DecorationImage(
+                                          image: NetworkImage(
+                                            'https://fixease.pk${booking['serviceImage']}',
+                                          ),
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              // if (booking['profilePicture'] != null)
-                              //   Container(
-                              //     height: 120,
-                              //     width: double.infinity,
-                              //     decoration: BoxDecoration(
-                              //       borderRadius: BorderRadius.vertical(
-                              //         top: Radius.circular(4),
-                              //       ),
-                              //       image: DecorationImage(
-                              //         image: NetworkImage(
-                              //           'https://fixease.pk${booking['profilePicture']}',
-                              //         ),
-                              //         fit: BoxFit.cover,
-                              //       ),
-                              //     ),
-                              //   ),
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              booking['companyName'] ?? 'N/A',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            SizedBox(height: 4),
-                                            Text(
-                                              booking['serviceProviderName'] ??
-                                                  'N/A',
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        Row(
-                                          children: [
-                                            // Status container
-                                            Container(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 8,
-                                                vertical: 4,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: AppColors.primary
-                                                    .withOpacity(0.1),
-                                                borderRadius:
-                                                    BorderRadius.circular(4),
-                                              ),
-                                              child: Text(
-                                                booking['status'] ?? 'Pending',
+                                // if (booking['profilePicture'] != null)
+                                //   Container(
+                                //     height: 120,
+                                //     width: double.infinity,
+                                //     decoration: BoxDecoration(
+                                //       borderRadius: BorderRadius.vertical(
+                                //         top: Radius.circular(4),
+                                //       ),
+                                //       image: DecorationImage(
+                                //         image: NetworkImage(
+                                //           'https://fixease.pk${booking['profilePicture']}',
+                                //         ),
+                                //         fit: BoxFit.cover,
+                                //       ),
+                                //     ),
+                                //   ),
+                                Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                booking['companyName'] ?? 'N/A',
                                                 style: TextStyle(
-                                                  color: AppColors.primary,
+                                                  fontSize: 18,
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
-                                            ),
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.delete_outline,
-                                                color: Colors.red,
+                                              SizedBox(height: 4),
+                                              Text(
+                                                booking['serviceProviderName'] ??
+                                                    'N/A',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 14,
+                                                ),
                                               ),
-                                              onPressed:
-                                                  () => showDeleteConfirmation(
-                                                    booking['bookingId'],
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 12),
-
-                                    // Category
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.category_outlined,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          booking['category'] ?? 'N/A',
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
+                                            ],
                                           ),
-                                        ),
-                                      ],
-                                    ),
+                                          Row(
+                                            children: [
+                                              // Status container
+                                              // Container(
+                                              //   padding: EdgeInsets.symmetric(
+                                              //     horizontal: 8,
+                                              //     vertical: 4,
+                                              //   ),
+                                              //   decoration: BoxDecoration(
+                                              //     color: AppColors.primary
+                                              //         .withOpacity(0.1),
+                                              //     borderRadius:
+                                              //         BorderRadius.circular(4),
+                                              //   ),
+                                              //   child: Text(
+                                              //     booking['status'] ??
+                                              //         'Pending',
+                                              //     style: TextStyle(
+                                              //       color: AppColors.primary,
+                                              //       fontWeight: FontWeight.bold,
+                                              //     ),
+                                              //   ),
+                                              // ),
+                                              IconButton(
+                                                icon: Icon(
+                                                  Icons.delete_outline,
+                                                  color: Colors.red,
+                                                ),
+                                                onPressed:
+                                                    () =>
+                                                        showDeleteConfirmation(
+                                                          booking['bookingId'],
+                                                        ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 12),
 
-                                    SizedBox(height: 8),
-
-                                    // Contact Number
-                                    if (booking['contactNumber'] != null &&
-                                        booking['contactNumber'] != '0')
+                                      // Category
                                       Row(
                                         children: [
                                           Icon(
-                                            Icons.phone,
+                                            Icons.category_outlined,
                                             size: 16,
-                                            color: Colors.grey,
+                                            color: AppColors.primary,
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            booking['contactNumber'],
+                                            booking['category'] ?? 'N/A',
                                             style: TextStyle(
                                               color: Colors.grey[600],
                                             ),
@@ -490,155 +540,198 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                         ],
                                       ),
 
-                                    SizedBox(height: 8),
+                                      SizedBox(height: 8),
 
-                                    // Booking Date
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.calendar_today,
-                                          size: 16,
-                                          color: Colors.grey,
+                                      // Contact Number
+                                      if (booking['contactNumber'] != null &&
+                                          booking['contactNumber'] != '0')
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.phone,
+                                              size: 16,
+                                              color: AppColors.primary,
+                                            ),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              booking['contactNumber'],
+                                              style: TextStyle(
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        SizedBox(width: 4),
-                                        Text(
-                                          _formatDate(booking['createdDate']),
-                                          style: TextStyle(
-                                            color: Colors.grey[600],
+
+                                      SizedBox(height: 8),
+
+                                      // Booking Date
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.calendar_today,
+                                            size: 16,
+                                            color: AppColors.primary,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-
-                                    // Customer confirmation buttons
-                                    if (booking['status'] == 'Accept')
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 16),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                  foregroundColor: Colors.white,
-                                                ),
-                                                onPressed:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId']
-                                                        ? null
-                                                        : () => confirmBooking(
-                                                          booking['bookingId'],
-                                                          false,
-                                                        ),
-                                                child:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId'] &&
-                                                            currentAction ==
-                                                                'cancel'
-                                                        ? SizedBox(
-                                                          height: 20,
-                                                          width: 20,
-                                                          child: CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                  Color
-                                                                >(Colors.white),
-                                                            strokeWidth: 2,
-                                                          ),
-                                                        )
-                                                        : Text('Cancel'),
-                                              ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            _formatDate(booking['createdDate']),
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
                                             ),
-                                            SizedBox(width: 8),
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.green,
-                                                  foregroundColor: Colors.white,
-                                                ),
-                                                onPressed:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId']
-                                                        ? null
-                                                        : () => confirmBooking(
-                                                          booking['bookingId'],
-                                                          true,
-                                                        ),
-                                                child:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId'] &&
-                                                            currentAction ==
-                                                                'agree'
-                                                        ? SizedBox(
-                                                          height: 20,
-                                                          width: 20,
-                                                          child: CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                  Color
-                                                                >(Colors.white),
-                                                            strokeWidth: 2,
-                                                          ),
-                                                        )
-                                                        : Text('Confirm'),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
 
-                                    // Approve work completion button
-                                    if (booking['status'] == 'Completed')
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 16),
-                                        child: Row(
-                                          children: [
-                                            Expanded(
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.green,
-                                                  foregroundColor: Colors.white,
-                                                ),
-                                                onPressed:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId']
-                                                        ? null
-                                                        : () =>
-                                                            approveWorkCompletion(
-                                                              booking,
+                                      // Customer confirmation buttons
+                                      if (booking['status'] == 'Accept')
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 16),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.red,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                      ),
+                                                  onPressed:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId']
+                                                          ? null
+                                                          : () => confirmBooking(
+                                                            booking['bookingId'],
+                                                            false,
+                                                          ),
+                                                  child:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId'] &&
+                                                              currentAction ==
+                                                                  'cancel'
+                                                          ? SizedBox(
+                                                            height: 20,
+                                                            width: 20,
+                                                            child: CircularProgressIndicator(
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                    Color
+                                                                  >(
+                                                                    Colors
+                                                                        .white,
+                                                                  ),
+                                                              strokeWidth: 2,
                                                             ),
-                                                child:
-                                                    isUpdatingStatus &&
-                                                            updatingBookingId ==
-                                                                booking['bookingId']
-                                                        ? SizedBox(
-                                                          height: 20,
-                                                          width: 20,
-                                                          child: CircularProgressIndicator(
-                                                            valueColor:
-                                                                AlwaysStoppedAnimation<
-                                                                  Color
-                                                                >(Colors.white),
-                                                            strokeWidth: 2,
-                                                          ),
-                                                        )
-                                                        : Text(
-                                                          'Approve Work Completion',
-                                                        ),
+                                                          )
+                                                          : Text('Cancel'),
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                      ),
+                                                  onPressed:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId']
+                                                          ? null
+                                                          : () => confirmBooking(
+                                                            booking['bookingId'],
+                                                            true,
+                                                          ),
+                                                  child:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId'] &&
+                                                              currentAction ==
+                                                                  'agree'
+                                                          ? SizedBox(
+                                                            height: 20,
+                                                            width: 20,
+                                                            child: CircularProgressIndicator(
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                    Color
+                                                                  >(
+                                                                    Colors
+                                                                        .white,
+                                                                  ),
+                                                              strokeWidth: 2,
+                                                            ),
+                                                          )
+                                                          : Text('Confirm'),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      // Approve work completion button
+                                      else if (booking['status'] == 'Completed')
+                                        Padding(
+                                          padding: EdgeInsets.only(top: 16),
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                        backgroundColor:
+                                                            Colors.green,
+                                                        foregroundColor:
+                                                            Colors.white,
+                                                      ),
+                                                  onPressed:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId']
+                                                          ? null
+                                                          : () =>
+                                                              approveWorkCompletion(
+                                                                booking,
+                                                              ),
+                                                  child:
+                                                      isUpdatingStatus &&
+                                                              updatingBookingId ==
+                                                                  booking['bookingId']
+                                                          ? SizedBox(
+                                                            height: 20,
+                                                            width: 20,
+                                                            child: CircularProgressIndicator(
+                                                              valueColor:
+                                                                  AlwaysStoppedAnimation<
+                                                                    Color
+                                                                  >(
+                                                                    Colors
+                                                                        .white,
+                                                                  ),
+                                                              strokeWidth: 2,
+                                                            ),
+                                                          )
+                                                          : Text(
+                                                            'Approve Work Completion',
+                                                          ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      // Status button for other statuses
+                                      else
+                                        _buildStatusButton(booking),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         );
                       },
