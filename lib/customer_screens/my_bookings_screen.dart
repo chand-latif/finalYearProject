@@ -8,6 +8,7 @@ import 'package:fix_easy/widgets/image_viewer.dart';
 import 'nav_bar_customer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'customer_booking_details_screen.dart';
+import 'update_booking_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);
@@ -328,6 +329,139 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     );
   }
 
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text('All'),
+            selected: selectedStatus == null,
+            onSelected: (_) {
+              setState(() => selectedStatus = null);
+              fetchBookings(null);
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: AppColors.primary.withOpacity(0.2),
+            checkmarkColor: AppColors.primary,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == null ? AppColors.primary : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == null ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Pending'),
+            selected: selectedStatus == 'Pending',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Pending');
+              fetchBookings('Pending');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.orange.withOpacity(0.2),
+            checkmarkColor: Colors.orange,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Pending'
+                      ? Colors.orange
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Pending'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('In Progress'),
+            selected: selectedStatus == 'InProgress',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'InProgress');
+              fetchBookings('InProgress');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.blue.withOpacity(0.2),
+            checkmarkColor: Colors.blue,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'InProgress'
+                      ? Colors.blue
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'InProgress'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Accepted'),
+            selected: selectedStatus == 'Accept',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Accept');
+              fetchBookings('Accept');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.green.withOpacity(0.2),
+            checkmarkColor: Colors.green,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Accept' ? Colors.green : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Accept'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Completed'),
+            selected: selectedStatus == 'Finished',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Finished');
+              fetchBookings('Finished');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.green.withOpacity(0.2),
+            checkmarkColor: Colors.green,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Finished'
+                      ? Colors.green
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Finished'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Rejected'),
+            selected: selectedStatus == 'Reject',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Reject');
+              fetchBookings('Reject');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.red.withOpacity(0.2),
+            checkmarkColor: Colors.red,
+            labelStyle: TextStyle(
+              color: selectedStatus == 'Reject' ? Colors.red : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Reject'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -339,39 +473,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
       ),
       body: Column(
         children: [
-          // Status Filter Dropdown
-          Padding(
-            padding: EdgeInsets.fromLTRB(15, 15, 15, 7),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: DropdownButton<String>(
-                value: selectedStatus,
-                isExpanded: true,
-                hint: Text('Filter by status'),
-                underline: SizedBox(),
-                items: [
-                  DropdownMenuItem(value: null, child: Text('All')),
-
-                  DropdownMenuItem(value: 'Pending', child: Text('Pending')),
-                  DropdownMenuItem(
-                    value: 'InProgress',
-                    child: Text('InProgress'),
-                  ),
-                  DropdownMenuItem(value: 'Finished', child: Text('Completed')),
-                  DropdownMenuItem(value: 'Reject', child: Text('Rejected')),
-                ],
-                onChanged: (value) {
-                  setState(() => selectedStatus = value);
-                  fetchBookings(value);
-                },
-              ),
-            ),
-          ),
-
+          _buildFilterChips(), // Replace old dropdown with new filter chips
           // Bookings List
           Expanded(
             child:
@@ -505,6 +607,29 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                               //     ),
                                               //   ),
                                               // ),
+                                              // IconButton(
+                                              //   icon: Icon(
+                                              //     Icons.edit_outlined,
+                                              //     color: AppColors.primary,
+                                              //   ),
+                                              //   onPressed: () {
+                                              //     Navigator.push(
+                                              //       context,
+                                              //       MaterialPageRoute(
+                                              //         builder:
+                                              //             (
+                                              //               context,
+                                              //             ) => UpdateBookingScreen(
+                                              //               booking: booking,
+                                              //               onUpdate:
+                                              //                   () => fetchBookings(
+                                              //                     selectedStatus,
+                                              //                   ),
+                                              //             ),
+                                              //       ),
+                                              //     );
+                                              //   },
+                                              // ),
                                               IconButton(
                                                 icon: Icon(
                                                   Icons.delete_outline,
@@ -574,7 +699,9 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                           ),
                                           SizedBox(width: 4),
                                           Text(
-                                            _formatDate(booking['createdDate']),
+                                            _formatDate(
+                                              booking['customerProposedTime'],
+                                            ),
                                             style: TextStyle(
                                               color: Colors.grey[600],
                                             ),

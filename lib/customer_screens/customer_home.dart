@@ -265,9 +265,9 @@ class _CustomerHomeState extends State<CustomerHome> {
                 physics: NeverScrollableScrollPhysics(),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 0.85,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.9,
                 ),
                 itemCount: serviceCategories.length,
                 itemBuilder: (context, index) {
@@ -295,32 +295,32 @@ class _CustomerHomeState extends State<CustomerHome> {
               SizedBox(height: 16),
               _buildFeaturedCompaniesSection(),
 
-              // Add View All Services button at the bottom
-              SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => AllServicesScreen(),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(
-                    'Browse All Services',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
-                  ),
-                ),
-              ),
+              //   // Add View All Services button at the bottom
+              //   SizedBox(height: 10),
+              //   SizedBox(
+              //     width: double.infinity,
+              //     child: ElevatedButton(
+              //       onPressed: () {
+              //         Navigator.push(
+              //           context,
+              //           MaterialPageRoute(
+              //             builder: (context) => AllServicesScreen(),
+              //           ),
+              //         );
+              //       },
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: AppColors.primary,
+              //         padding: EdgeInsets.symmetric(vertical: 16),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(8),
+              //         ),
+              //       ),
+              //       child: Text(
+              //         'Browse All Services',
+              //         style: TextStyle(fontSize: 16, color: Colors.white),
+              //       ),
+              //     ),
+              //   ),
             ],
           ),
         ),
@@ -374,32 +374,39 @@ class _CustomerHomeState extends State<CustomerHome> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 15,
-              offset: Offset(0, 3),
+              color: color.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
           ],
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Icon Container
             Container(
-              width: 60,
-              height: 60,
+              padding: EdgeInsets.all(10), // Reduced from 12
+              margin: EdgeInsets.only(top: 4), // Added top margin
               decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(16),
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
-              child: Icon(icon, size: 32, color: color),
+              child: Container(
+                padding: EdgeInsets.all(6), // Reduced from 8
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  icon,
+                  size: 24, // Reduced from 28
+                  color: color,
+                ),
+              ),
             ),
-
             SizedBox(height: 12),
-
-            // Service Name
             Text(
               title,
               style: TextStyle(
@@ -408,6 +415,15 @@ class _CustomerHomeState extends State<CustomerHome> {
                 color: Colors.black87,
               ),
               textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 4),
+            Container(
+              width: 30,
+              height: 3,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
           ],
         ),
@@ -428,7 +444,7 @@ class _CustomerHomeState extends State<CustomerHome> {
     }
 
     return SizedBox(
-      height: 160,
+      height: 180,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
         child: ListView(
@@ -559,7 +575,7 @@ class _CustomerHomeState extends State<CustomerHome> {
               : null,
       child: Container(
         width: 140,
-        margin: EdgeInsets.only(right: 16),
+        margin: EdgeInsets.fromLTRB(0, 0, 16, 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),

@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../theme.dart';
 import 'company_details_screen.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AllCompaniesScreen extends StatefulWidget {
   const AllCompaniesScreen({super.key});
@@ -44,6 +45,48 @@ class _AllCompaniesScreenState extends State<AllCompaniesScreen> {
     }
   }
 
+  Widget _buildCompanyShimmer() {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Row(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              margin: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 20,
+                      color: Colors.white,
+                    ),
+                    SizedBox(height: 8),
+                    Container(width: 150, height: 16, color: Colors.white),
+                    SizedBox(height: 8),
+                    Container(width: 100, height: 16, color: Colors.white),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,7 +97,11 @@ class _AllCompaniesScreenState extends State<AllCompaniesScreen> {
       ),
       body:
           isLoading
-              ? Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                padding: EdgeInsets.all(16),
+                itemCount: 5,
+                itemBuilder: (context, index) => _buildCompanyShimmer(),
+              )
               : companies.isEmpty
               ? Center(child: Text('No companies available'))
               : ListView.builder(

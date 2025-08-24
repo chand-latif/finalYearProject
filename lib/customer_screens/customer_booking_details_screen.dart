@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
 import 'service_review_screen.dart';
+import 'update_booking_screen.dart';
 
 class CustomerBookingDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> booking;
@@ -280,10 +281,30 @@ class _CustomerBookingDetailsScreenState
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text('Booking Request Details'),
+        title: Text('Booking Details'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         actions: [
+          // IconButton(
+          //   icon: Icon(Icons.edit_outlined),
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder:
+          //             (context) => UpdateBookingScreen(
+          //               booking: widget.booking,
+          //               onUpdate: () {
+          //                 if (widget.onStatusChanged != null) {
+          //                   widget.onStatusChanged!();
+          //                 }
+          //                 Navigator.pop(context);
+          //               },
+          //             ),
+          //       ),
+          //     );
+          //   },
+          // ),
           IconButton(
             icon: Icon(Icons.delete_outline, color: Colors.red),
             onPressed: showDeleteConfirmation,
@@ -451,7 +472,7 @@ class _CustomerBookingDetailsScreenState
                             SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                formatDateTime(booking['createdDate']),
+                                formatDateTime(booking['customerProposedTime']),
                                 style: TextStyle(fontSize: 15),
                               ),
                             ),

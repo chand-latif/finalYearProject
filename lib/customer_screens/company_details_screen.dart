@@ -6,6 +6,7 @@ import 'service_details_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
+import 'package:shimmer/shimmer.dart'; // Add this import
 
 class CompanyDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> company;
@@ -91,6 +92,46 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Could not launch WhatsApp')));
     }
+  }
+
+  Widget _buildServiceShimmer() {
+    return Card(
+      margin: EdgeInsets.only(bottom: 16),
+      child: Shimmer.fromColors(
+        baseColor: Colors.grey[300]!,
+        highlightColor: Colors.grey[100]!,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(height: 120, width: double.infinity, color: Colors.white),
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Container(
+                    width: double.infinity,
+                    height: 16,
+                    color: Colors.white,
+                  ),
+                  SizedBox(height: 8),
+                  Container(width: 200, height: 16, color: Colors.white),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -261,7 +302,13 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                       ),
                     ),
                     if (isLoading)
-                      Center(child: CircularProgressIndicator())
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: 3,
+                        itemBuilder: (context, index) => _buildServiceShimmer(),
+                      )
                     else if (services.isEmpty)
                       Center(
                         child: Padding(

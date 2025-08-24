@@ -447,12 +447,13 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                               color: Colors.red,
                               borderRadius: BorderRadius.circular(15),
                             ),
+
+                            padding: EdgeInsets.all(4),
                             child: Icon(
                               Icons.close,
                               color: Colors.white,
                               size: 20,
                             ),
-                            padding: EdgeInsets.all(4),
                           ),
                         ),
                       ),

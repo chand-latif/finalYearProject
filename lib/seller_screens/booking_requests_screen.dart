@@ -281,49 +281,151 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
     );
   }
 
+  Widget _buildFilterChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          FilterChip(
+            label: Text('All'),
+            selected: selectedStatus == null,
+            onSelected: (_) {
+              setState(() => selectedStatus = null);
+              fetchBookings(null);
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: AppColors.primary.withOpacity(0.2),
+            checkmarkColor: AppColors.primary,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == null ? AppColors.primary : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == null ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Pending'),
+            selected: selectedStatus == 'Pending',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Pending');
+              fetchBookings('Pending');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.orange.withOpacity(0.2),
+            checkmarkColor: Colors.orange,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Pending'
+                      ? Colors.orange
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Pending'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('In Progress'),
+            selected: selectedStatus == 'InProgress',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'InProgress');
+              fetchBookings('InProgress');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.blue.withOpacity(0.2),
+            checkmarkColor: Colors.blue,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'InProgress'
+                      ? Colors.blue
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'InProgress'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Accepted'),
+            selected: selectedStatus == 'Accept',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Accept');
+              fetchBookings('Accept');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.green.withOpacity(0.2),
+            checkmarkColor: Colors.green,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Accept' ? Colors.green : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Accept'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Rejected'),
+            selected: selectedStatus == 'Reject',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Reject');
+              fetchBookings('Reject');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.red.withOpacity(0.2),
+            checkmarkColor: Colors.red,
+            labelStyle: TextStyle(
+              color: selectedStatus == 'Reject' ? Colors.red : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Reject'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
+            label: Text('Completed'),
+            selected: selectedStatus == 'Completed',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Completed');
+              fetchBookings('Completed');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.green.withOpacity(0.2),
+            checkmarkColor: Colors.green,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Completed'
+                      ? Colors.green
+                      : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Completed'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: Text('Booking Requests'),
+        title: Text('Bookings'),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
-          // Add Status Filter Dropdown
-          Padding(
-            padding: EdgeInsets.fromLTRB(15, 15, 15, 7),
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: DropdownButton<String>(
-                value: selectedStatus,
-                isExpanded: true,
-                hint: Text('Filter by status'),
-                underline: SizedBox(),
-                items: [
-                  DropdownMenuItem(value: null, child: Text('All')),
-                  DropdownMenuItem(value: 'Pending', child: Text('Pending')),
-                  DropdownMenuItem(
-                    value: 'InProgress',
-                    child: Text('In Progress'),
-                  ),
-                  DropdownMenuItem(value: 'Accept', child: Text('Accepted')),
-                  DropdownMenuItem(value: 'Reject', child: Text('Rejected')),
-                ],
-                onChanged: (value) {
-                  setState(() => selectedStatus = value);
-                  fetchBookings(value);
-                },
-              ),
-            ),
-          ),
-
+          _buildFilterChips(), // Replace old dropdown with new filter chips
           // Existing Bookings List
           Expanded(
             child:

@@ -81,32 +81,6 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
     }
   }
 
-  String getStatusText(int? statusCode) {
-    switch (statusCode) {
-      case 1:
-        return 'Available';
-      case 0:
-        return 'Busy';
-      case 2:
-        return 'Away';
-      default:
-        return 'Available';
-    }
-  }
-
-  int getStatusCode(String status) {
-    switch (status) {
-      case 'Available':
-        return 1;
-      case 'Busy':
-        return 0;
-      case 'Away':
-        return 2;
-      default:
-        return 1;
-    }
-  }
-
   Future<void> updateAvailabilityStatus(String status) async {
     if (!mounted) return;
 
@@ -117,7 +91,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
     try {
       final response = await http.put(
         Uri.parse(
-          'https://fixease.pk/api/CompanyProfile/SetAvailabilityStatus?Status=${getStatusCode(status)}&CompanyId=$companyId',
+          'https://fixease.pk/api/CompanyProfile/SetAvailabilityStatus?Status=$status&CompanyId=$companyId',
         ),
         headers: {'accept': '*/*'},
       );
@@ -169,9 +143,7 @@ class _ProfilePageSellerState extends State<ProfilePageSeller> {
           companyWhatsappNumber = companyData['whatsappNumber'] ?? '';
           companyProfileURL = companyData['profilePicture'] ?? '';
           companyLogoURL = companyData['companyLogo'] ?? '';
-          currentAvailabilityStatus = getStatusText(
-            int.tryParse(companyData['status'].toString()),
-          );
+          currentAvailabilityStatus = companyData['status'] ?? 'Available';
         });
       }
     }
