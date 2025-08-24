@@ -8,7 +8,7 @@ import 'package:fix_easy/widgets/image_viewer.dart';
 import 'nav_bar_customer.dart';
 import 'package:shimmer/shimmer.dart';
 import 'customer_booking_details_screen.dart';
-import 'update_booking_screen.dart';
+// import 'update_booking_screen.dart';
 
 class MyBookingsScreen extends StatefulWidget {
   const MyBookingsScreen({Key? key}) : super(key: key);

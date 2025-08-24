@@ -497,261 +497,267 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
           }
           FocusScope.of(context).unfocus();
         },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Image Upload Card
-                Card(
-                  color: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Service Image',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '(Required)',
-                              style: TextStyle(color: Colors.red, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 16),
-                        buildImagePicker(),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Service Details Card
-                Card(
-                  color: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Service Details',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        // Category Dropdown
-                        DropdownButtonFormField<String>(
-                          value: selectedCategory,
-                          decoration: _buildInputDecoration(
-                            'Service Category',
-                            Icons.category,
-                          ),
-                          items:
-                              serviceCategories.keys.map((category) {
-                                return DropdownMenuItem<String>(
-                                  value: category,
-                                  child: Text(category),
-                                );
-                              }).toList(),
-                          onChanged: (newValue) {
-                            setState(() {
-                              selectedCategory = newValue;
-                              selectedCategoryId = serviceCategories[newValue];
-                            });
-                          },
-                          validator:
-                              (value) =>
-                                  value == null
-                                      ? 'Please select a category'
-                                      : null,
-                        ),
-                        SizedBox(height: 16),
-
-                        // Service Type Dropdown
-                        DropdownButtonFormField<String>(
-                          value: serviceType,
-                          decoration: _buildInputDecoration(
-                            'Service Type',
-                            Icons.work,
-                          ),
-                          items:
-                              ['Published', 'Draft'].map((type) {
-                                return DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(type),
-                                );
-                              }).toList(),
-                          onChanged: (newValue) {
-                            if (newValue != null)
-                              setState(() => serviceType = newValue);
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Location Card
-                Card(
-                  color: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Service Location',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        buildAddressSearchSection(),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 16),
-
-                // Additional Information Card
-                Card(
-                  color: Colors.white,
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Additional Information',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 16),
-                        TextFormField(
-                          controller: descriptionController,
-                          decoration: _buildInputDecoration(
-                            'Service Description',
-                            Icons.description,
-                          ),
-                          maxLines: 3,
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true ? 'Required' : null,
-                        ),
-                        SizedBox(height: 16),
-                        TextFormField(
-                          controller: providerNameController,
-                          decoration: _buildInputDecoration(
-                            'Provider Name',
-                            Icons.person,
-                          ),
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true ? 'Required' : null,
-                        ),
-                        SizedBox(height: 16),
-                        TextFormField(
-                          controller: contactNumberController,
-                          decoration: _buildInputDecoration(
-                            'Contact Number (11 digits)',
-                            Icons.phone,
-                          ),
-                          keyboardType: TextInputType.number,
-                          maxLength: 11, // Limit input to 11 characters
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Contact number is required';
-                            }
-                            if (!RegExp(r'^\d{11}$').hasMatch(value)) {
-                              return 'Enter exactly 11 digits';
-                            }
-                            return null;
-                          },
-                        ),
-                        SizedBox(height: 16),
-                        TextFormField(
-                          controller: serviceTagsController,
-                          decoration: _buildInputDecoration(
-                            'Service Tags',
-                            Icons.tag,
-                          ).copyWith(hintText: 'e.g. #plumbing #repair'),
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true ? 'Required' : null,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 24),
-
-                // Submit Button
-                ElevatedButton(
-                  onPressed: isLoading ? null : submitForm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    minimumSize: Size(double.infinity, 50),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image Upload Card
+                  Card(
+                    color: Colors.white,
+                    elevation: 2,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                  ),
-                  child:
-                      isLoading
-                          ? Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
+                              Text(
+                                'Service Image',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SizedBox(width: 12),
-                              Text('Creating Service...'),
+                              Text(
+                                '(Required)',
+                                style: TextStyle(
+                                  color: Colors.red,
+                                  fontSize: 14,
+                                ),
+                              ),
                             ],
-                          )
-                          : Text('Create Service'),
-                ),
-                SizedBox(height: 24),
-              ],
+                          ),
+                          SizedBox(height: 16),
+                          buildImagePicker(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Service Details Card
+                  Card(
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Service Details',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          // Category Dropdown
+                          DropdownButtonFormField<String>(
+                            value: selectedCategory,
+                            decoration: _buildInputDecoration(
+                              'Service Category',
+                              Icons.category,
+                            ),
+                            items:
+                                serviceCategories.keys.map((category) {
+                                  return DropdownMenuItem<String>(
+                                    value: category,
+                                    child: Text(category),
+                                  );
+                                }).toList(),
+                            onChanged: (newValue) {
+                              setState(() {
+                                selectedCategory = newValue;
+                                selectedCategoryId =
+                                    serviceCategories[newValue];
+                              });
+                            },
+                            validator:
+                                (value) =>
+                                    value == null
+                                        ? 'Please select a category'
+                                        : null,
+                          ),
+                          SizedBox(height: 16),
+
+                          // Service Type Dropdown
+                          DropdownButtonFormField<String>(
+                            value: serviceType,
+                            decoration: _buildInputDecoration(
+                              'Service Type',
+                              Icons.work,
+                            ),
+                            items:
+                                ['Published', 'Draft'].map((type) {
+                                  return DropdownMenuItem<String>(
+                                    value: type,
+                                    child: Text(type),
+                                  );
+                                }).toList(),
+                            onChanged: (newValue) {
+                              if (newValue != null)
+                                setState(() => serviceType = newValue);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Location Card
+                  Card(
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Service Location',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          buildAddressSearchSection(),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 16),
+
+                  // Additional Information Card
+                  Card(
+                    color: Colors.white,
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Additional Information',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: descriptionController,
+                            decoration: _buildInputDecoration(
+                              'Service Description',
+                              Icons.description,
+                            ),
+                            maxLines: 3,
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true ? 'Required' : null,
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: providerNameController,
+                            decoration: _buildInputDecoration(
+                              'Provider Name',
+                              Icons.person,
+                            ),
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true ? 'Required' : null,
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: contactNumberController,
+                            decoration: _buildInputDecoration(
+                              'Contact Number (11 digits)',
+                              Icons.phone,
+                            ),
+                            keyboardType: TextInputType.number,
+                            maxLength: 11, // Limit input to 11 characters
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Contact number is required';
+                              }
+                              if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+                                return 'Enter exactly 11 digits';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 16),
+                          TextFormField(
+                            controller: serviceTagsController,
+                            decoration: _buildInputDecoration(
+                              'Service Tags',
+                              Icons.tag,
+                            ).copyWith(hintText: 'e.g. #plumbing #repair'),
+                            validator:
+                                (value) =>
+                                    value?.isEmpty ?? true ? 'Required' : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Submit Button
+                  ElevatedButton(
+                    onPressed: isLoading ? null : submitForm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: EdgeInsets.symmetric(vertical: 16),
+                      minimumSize: Size(double.infinity, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child:
+                        isLoading
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text('Creating Service...'),
+                              ],
+                            )
+                            : Text('Create Service'),
+                  ),
+                  SizedBox(height: 24),
+                ],
+              ),
             ),
           ),
         ),

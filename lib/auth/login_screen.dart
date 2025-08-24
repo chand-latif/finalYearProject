@@ -6,7 +6,7 @@ import 'dart:convert';
 import '../verfication_OTP.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fix_easy/seller_screens/create_company_profile.dart';
-import 'package:fix_easy/seller_screens/seller_home.dart' as seller_home;
+// import 'package:fix_easy/seller_screens/seller_home.dart' as seller_home;
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -49,13 +49,14 @@ class _MyHomePageState extends State<MyHomePage> {
       final companyCreated = data['data']['isCompanyProfileExist'];
 
       if (userType == 'Customer') {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => customer_home.CustomerHome()),
+          (route) => false, // This will remove all previous routes
         );
       } else if (userType == 'Seller') {
         if (companyCreated == false) {
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder:
@@ -63,9 +64,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     userID: data['data']['userId'],
                   ),
             ),
+            (route) => false, // This will remove all previous routes
           );
         } else {
-          Navigator.pushReplacementNamed(context, '/sellerHome');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/sellerHome',
+            (route) => false, // This will remove all previous routes
+          );
         }
       }
     } else {

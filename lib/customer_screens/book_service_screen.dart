@@ -6,7 +6,8 @@ import 'package:fix_easy/theme.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geocoding/geocoding.dart';
-// import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 // Custom class to hold location and formatted address
 class SearchResult {
@@ -29,9 +30,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   final descriptionController = TextEditingController();
   final locationController = TextEditingController();
   final searchController = TextEditingController();
-  final phoneController = TextEditingController(); // Added phone controller
+  final phoneController = TextEditingController();
   DateTime? proposedTime;
-  List<File> issueImages = []; // Changed from single File to List<File>
+  List<File> issueImages = [];
   bool isLoading = false;
   bool showSearchResults = false;
   bool isSearching = false;
@@ -40,6 +41,24 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
   String? selectedAddress;
   List<SearchResult> searchResults = [];
   final picker = ImagePicker();
+
+  // Function to copy and save image to a permanent location
+  Future<File> saveImagePermanently(String imagePath) async {
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final fileName = path.basename(imagePath);
+      final savedImage = File('${directory.path}/$fileName');
+
+      // Copy the file to permanent location
+      final originalFile = File(imagePath);
+      await originalFile.copy(savedImage.path);
+
+      return savedImage;
+    } catch (e) {
+      print('Error saving image: $e');
+      return File(imagePath);
+    }
+  }
 
   Future<void> pickImages() async {
     showModalBottomSheet(
@@ -53,14 +72,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                   title: Text('Take Photo'),
                   onTap: () async {
                     Navigator.pop(context);
-                    final pickedFile = await picker.pickImage(
-                      source: ImageSource.camera,
-                    );
-                    if (pickedFile != null) {
-                      setState(() {
-                        issueImages.add(File(pickedFile.path));
-                      });
-                    }
+                    await captureFromCamera();
                   },
                 ),
                 ListTile(
@@ -68,14 +80,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                   title: Text('Choose from Gallery'),
                   onTap: () async {
                     Navigator.pop(context);
-                    final pickedFiles = await picker.pickMultipleMedia();
-                    if (pickedFiles.isNotEmpty) {
-                      setState(() {
-                        issueImages.addAll(
-                          pickedFiles.map((file) => File(file.path)),
-                        );
-                      });
-                    }
+                    await pickFromGallery();
                   },
                 ),
                 // ListTile(
@@ -83,7 +88,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                 //   title: Text('Take Multiple Photos'),
                 //   onTap: () async {
                 //     Navigator.pop(context);
-                //     _showMultipleCameraDialog();
+                //     await captureMultiplePhotos();
                 //   },
                 // ),
               ],
@@ -92,42 +97,160 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
     );
   }
 
-  Future<void> _showMultipleCameraDialog() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Take Multiple Photos'),
-          content: Text('Keep taking photos. Press "Done" when finished.'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Done'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                final pickedFile = await picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                if (pickedFile != null) {
-                  setState(() {
-                    issueImages.add(File(pickedFile.path));
-                  });
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-              ),
-              child: Text('Take Photo', style: TextStyle(color: Colors.white)),
-            ),
-          ],
+  Future<void> captureFromCamera() async {
+    try {
+      final XFile? pickedFile = await picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85, // Compress image to reduce size
+        maxWidth: 1920, // Limit max width
+        maxHeight: 1080, // Limit max height
+      );
+
+      if (pickedFile != null) {
+        // Save image to permanent location
+        final savedImage = await saveImagePermanently(pickedFile.path);
+
+        setState(() {
+          issueImages.add(savedImage);
+        });
+
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Photo captured successfully'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
         );
-      },
-    );
+      }
+    } catch (e) {
+      print('Error capturing image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error capturing image'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
+
+  Future<void> pickFromGallery() async {
+    try {
+      final List<XFile> pickedFiles = await picker.pickMultiImage(
+        imageQuality: 85, // Compress images
+        maxWidth: 1920,
+        maxHeight: 1080,
+      );
+
+      if (pickedFiles.isNotEmpty) {
+        List<File> newImages = [];
+        for (XFile file in pickedFiles) {
+          // Save each image to permanent location
+          final savedImage = await saveImagePermanently(file.path);
+          newImages.add(savedImage);
+        }
+
+        setState(() {
+          issueImages.addAll(newImages);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${pickedFiles.length} image(s) added'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error picking images: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting images'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Future<void> captureMultiplePhotos() async {
+  //   int photosCount = 0;
+  //   bool continueCapturing = true;
+
+  //   while (continueCapturing) {
+  //     try {
+  //       final XFile? pickedFile = await picker.pickImage(
+  //         source: ImageSource.camera,
+  //         imageQuality: 85,
+  //         maxWidth: 1920,
+  //         maxHeight: 1080,
+  //       );
+
+  //       if (pickedFile != null) {
+  //         // Save image to permanent location
+  //         final savedImage = await saveImagePermanently(pickedFile.path);
+
+  //         setState(() {
+  //           issueImages.add(savedImage);
+  //           photosCount++;
+  //         });
+
+  //         // Ask if user wants to capture more
+  //         continueCapturing =
+  //             await showDialog<bool>(
+  //               context: context,
+  //               builder: (BuildContext context) {
+  //                 return AlertDialog(
+  //                   title: Text('Photo Captured'),
+  //                   content: Text(
+  //                     '$photosCount photo(s) captured. Take another?',
+  //                   ),
+  //                   actions: [
+  //                     TextButton(
+  //                       onPressed: () => Navigator.pop(context, false),
+  //                       child: Text('Done'),
+  //                     ),
+  //                     ElevatedButton(
+  //                       onPressed: () => Navigator.pop(context, true),
+  //                       style: ElevatedButton.styleFrom(
+  //                         backgroundColor: AppColors.primary,
+  //                       ),
+  //                       child: Text(
+  //                         'Take Another',
+  //                         style: TextStyle(color: Colors.white),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 );
+  //               },
+  //             ) ??
+  //             false;
+  //       } else {
+  //         continueCapturing = false;
+  //       }
+  //     } catch (e) {
+  //       print('Error capturing photo: $e');
+  //       continueCapturing = false;
+  //     }
+  //   }
+
+  //   if (photosCount > 0) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('$photosCount photo(s) captured successfully'),
+  //         backgroundColor: Colors.green,
+  //       ),
+  //     );
+  //   }
+  // }
 
   void removeImage(int index) {
     setState(() {
+      // Delete the file if it exists in app documents
+      final file = issueImages[index];
+      if (file.path.contains('Documents')) {
+        file.deleteSync(recursive: false);
+      }
       issueImages.removeAt(index);
     });
   }
@@ -435,6 +558,20 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                           width: 120,
                           height: 120,
                           fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey[600],
+                              ),
+                            );
+                          },
                         ),
                       ),
                       Positioned(
@@ -447,7 +584,6 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                               color: Colors.red,
                               borderRadius: BorderRadius.circular(15),
                             ),
-
                             padding: EdgeInsets.all(4),
                             child: Icon(
                               Icons.close,
@@ -481,7 +617,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
       );
       return;
     }
+
     setState(() => isLoading = true);
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
@@ -490,6 +628,7 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
         throw Exception('No auth token found');
       }
 
+      // Create multipart request
       var request = http.MultipartRequest(
         'POST',
         Uri.parse('https://fixease.pk/api/BookingService/CreateServiceBooking'),
@@ -509,24 +648,60 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
         'Latitude': pickedLat.toString(),
         'Longitude': pickedLng.toString(),
         'ProposedTime': proposedTime!.toIso8601String(),
-        'PhoneNumber': phoneController.text, // Pass phone number
+        'PhoneNumber': phoneController.text,
       });
 
-      // Add multiple images if selected
-      for (int i = 0; i < issueImages.length; i++) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'IssuedImages',
-            issueImages[i].path,
-          ),
-        );
+      // Add images with proper handling
+      if (issueImages.isNotEmpty) {
+        for (int i = 0; i < issueImages.length; i++) {
+          try {
+            final file = issueImages[i];
+
+            // Check if file exists
+            if (await file.exists()) {
+              // Get file bytes
+              final bytes = await file.readAsBytes();
+
+              // Create multipart file from bytes
+              final multipartFile = http.MultipartFile.fromBytes(
+                'IssuedImages', // Field name matching API
+                bytes,
+                filename:
+                    'image_${DateTime.now().millisecondsSinceEpoch}_$i.jpg',
+              );
+
+              request.files.add(multipartFile);
+
+              print('Added image $i: ${multipartFile.filename}');
+            } else {
+              print('File does not exist: ${file.path}');
+            }
+          } catch (e) {
+            print('Error adding image $i: $e');
+          }
+        }
       }
 
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-      var responseData = jsonDecode(responseBody);
+      // Send request
+      print('Sending request with ${request.files.length} images');
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
 
-      if (response.statusCode == 200) {
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Clear temporary images after successful upload
+        for (var image in issueImages) {
+          if (image.path.contains('Documents')) {
+            try {
+              await image.delete();
+            } catch (e) {
+              print('Error deleting temp file: $e');
+            }
+          }
+        }
+
         Navigator.pushNamed(context, '/myBookings');
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -534,17 +709,35 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        // Navigator.pop(context, true);
       } else {
+        var responseData = {};
+        try {
+          responseData = jsonDecode(response.body);
+        } catch (e) {
+          print('Error parsing response: $e');
+        }
         throw Exception(responseData['message'] ?? 'Failed to create booking');
       }
     } catch (e) {
+      print('Error submitting booking: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
       );
     } finally {
       setState(() => isLoading = false);
     }
+  }
+
+  @override
+  void dispose() {
+    descriptionController.dispose();
+    locationController.dispose();
+    searchController.dispose();
+    phoneController.dispose();
+    super.dispose();
   }
 
   @override
@@ -678,8 +871,9 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                proposedTime?.toString() ??
-                                    'Select date and time',
+                                proposedTime != null
+                                    ? '${proposedTime!.day}/${proposedTime!.month}/${proposedTime!.year} ${proposedTime!.hour.toString().padLeft(2, '0')}:${proposedTime!.minute.toString().padLeft(2, '0')}'
+                                    : 'Select date and time',
                                 style: TextStyle(
                                   color:
                                       proposedTime == null

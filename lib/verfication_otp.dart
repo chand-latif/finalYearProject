@@ -95,7 +95,11 @@ class _VerificationOTPState extends State<VerificationOTP> {
             context,
           ).showSnackBar(SnackBar(content: Text('OTP verified successfully')));
           // Navigator.pushNamed(context, '/customerHome');
-          Navigator.pushNamed(context, '/home');
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/home', // Replace with your login route
+            (route) => false,
+          );
         } else {
           ScaffoldMessenger.of(
             context,

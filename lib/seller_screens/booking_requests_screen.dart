@@ -425,7 +425,7 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
       ),
       body: Column(
         children: [
-          _buildFilterChips(), // Replace old dropdown with new filter chips
+          _buildFilterChips(),
           // Existing Bookings List
           Expanded(
             child:

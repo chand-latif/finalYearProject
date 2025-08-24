@@ -265,7 +265,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                                           icon: Icon(
                                             FontAwesomeIcons.whatsapp,
                                             color: Colors.green,
-                                            size: 24,
+                                            size: 22,
                                           ), // Changed from phone to whatsapp
                                           label: Text(
                                             'WhatsApp',

@@ -19,6 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   String userEmail = '';
 
   String joiningDate = '';
+  int? userId;
 
   @override
   void initState() {
@@ -48,6 +49,7 @@ class _ProfilePageState extends State<ProfilePage> {
           userName = userData['userName'] ?? '';
           userEmail = userData['userEmail'] ?? '';
           joiningDate = userData['createdDate']?.split('T')[0] ?? '';
+          userId = userData['userId'];
         });
       }
     } else {
@@ -95,13 +97,13 @@ class _ProfilePageState extends State<ProfilePage> {
       final token = prefs.getString('auth_token');
 
       final response = await http.delete(
-        Uri.parse('https://fixease.pk/api/User/DeleteUser?UserId=2'),
+        Uri.parse('https://fixease.pk/api/User/DeleteUser?UserId=$userId'),
         headers: {'Authorization': 'Bearer $token', 'Accept': '*/*'},
       );
 
       if (response.statusCode == 200) {
         await prefs.remove('auth_token');
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
       } else {
         throw Exception('Failed to delete account');
       }

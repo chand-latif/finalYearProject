@@ -253,7 +253,12 @@ class _CreateCompanyProfileScreenState
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushReplacementNamed(context, '/sellerHome');
+        // Replace current navigation with this to prevent going back
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/sellerHome',
+          (route) => false, // This will remove all previous routes
+        );
       } else {
         // Parse error response if possible
         String errorMessage = 'Error: ${response.statusCode}';
@@ -361,13 +366,15 @@ class _CreateCompanyProfileScreenState
         ),
         SizedBox(height: 8),
         Text(
-          companyProfile == null ? "Tap to add logo" : "Tap to change logo",
+          companyProfile == null
+              ? "Tap to Profile Picture"
+              : "Tap to change Profile Picture",
           style: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
         if (companyProfile != null)
           TextButton(
             onPressed: () => setState(() => companyProfile = null),
-            child: Text("Remove Logo", style: TextStyle(color: Colors.red)),
+            child: Text("Remove Picture", style: TextStyle(color: Colors.red)),
           ),
       ],
     );

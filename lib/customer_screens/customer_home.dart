@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'nav_bar_customer.dart';
 import 'package:fix_easy/theme.dart';
 import 'category_services_screen.dart';
-import 'all_services_screen.dart';
+// import 'all_services_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shimmer/shimmer.dart';
