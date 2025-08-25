@@ -8,6 +8,62 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fix_easy/widgets/image_viewer.dart';
 import 'package:shimmer/shimmer.dart'; // Add this import
 
+class CompanyStatusIndicator extends StatelessWidget {
+  final String? status;
+
+  const CompanyStatusIndicator({Key? key, this.status}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Determine status color and text
+    String displayStatus = status?.toLowerCase() ?? 'away';
+    Color statusColor;
+    IconData statusIcon;
+
+    switch (displayStatus) {
+      case 'available':
+        statusColor = Colors.green;
+        statusIcon = Icons.check_circle;
+        break;
+      case 'busy':
+        statusColor = Colors.orange;
+        statusIcon = Icons.schedule;
+        break;
+      case 'away':
+      default:
+        statusColor = Colors.grey;
+        statusIcon = Icons.do_not_disturb;
+        displayStatus = 'away';
+        break;
+    }
+
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(statusIcon, size: 16, color: statusColor),
+          SizedBox(width: 6),
+          Text(
+            displayStatus.substring(0, 1).toUpperCase() +
+                displayStatus.substring(1),
+            style: TextStyle(
+              color: statusColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class CompanyDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> company;
 
@@ -220,6 +276,11 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                     ),
+                                  ),
+                                  CompanyStatusIndicator(
+                                    status:
+                                        widget.company['status'] ??
+                                        'N/A', // Hardcoded for testing
                                   ),
                                   SizedBox(height: 16),
                                   ListTile(

@@ -99,183 +99,188 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text('Sign Up'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            children: [
-              // Welcome Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Make your future bright with us!',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Create New Account',
-                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-
-              // Form Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInputField(
-                        'Full Name',
-                        nameController,
-                        Icons.person,
-                        validateName,
-                        nameError,
-                      ),
-                      SizedBox(height: 16),
-                      _buildInputField(
-                        'Email Address',
-                        emailController,
-                        Icons.email,
-                        validateEmail,
-                        emailError,
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      SizedBox(height: 16),
-                      _buildInputField(
-                        'Phone Number',
-                        phoneController,
-                        Icons.phone,
-                        validatePhone,
-                        phoneError,
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(11),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      _buildPasswordField(
-                        'Password',
-                        passwordController,
-                        isObscurePassword,
-                        (value) {
-                          setState(
-                            () => isObscurePassword = !isObscurePassword,
-                          );
-                        },
-                        validatePassword,
-                        passwordError,
-                      ),
-                      SizedBox(height: 16),
-                      _buildPasswordField(
-                        'Confirm Password',
-                        confirmPasswordController,
-                        isObscureConfirmPassword,
-                        (value) {
-                          setState(
-                            () =>
-                                isObscureConfirmPassword =
-                                    !isObscureConfirmPassword,
-                          );
-                        },
-                        null,
-                        null,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 24),
-
-              // Submit Button
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  minimumSize: Size(double.infinity, 50),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          title: Text('Sign Up'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              children: [
+                // Welcome Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                ),
-                onPressed:
-                    isLoading
-                        ? null
-                        : () async {
-                          if (isFormValid()) {
-                            setState(() => isLoading = true);
-                            await signUpUser();
-                            setState(() => isLoading = false);
-                          }
-                        },
-                child:
-                    isLoading
-                        ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            ),
-                            SizedBox(width: 12),
-                            Text('Creating Account...'),
-                          ],
-                        )
-                        : Text('Sign Up', style: TextStyle(fontSize: 16)),
-              ),
-              SizedBox(height: 16),
-
-              // Sign In Link
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Already have an account?'),
-                  TextButton(
-                    onPressed: () => Navigator.pushNamed(context, '/home'),
-                    child: Text(
-                      'Sign In',
-                      style: TextStyle(
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Make your future bright with us!',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Create New Account',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ],
+                ),
+                SizedBox(height: 20),
+
+                // Form Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildInputField(
+                          'Full Name',
+                          nameController,
+                          Icons.person,
+                          validateName,
+                          nameError,
+                        ),
+                        SizedBox(height: 16),
+                        _buildInputField(
+                          'Email Address',
+                          emailController,
+                          Icons.email,
+                          validateEmail,
+                          emailError,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        SizedBox(height: 16),
+                        _buildInputField(
+                          'Phone Number',
+                          phoneController,
+                          Icons.phone,
+                          validatePhone,
+                          phoneError,
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(11),
+                          ],
+                        ),
+                        SizedBox(height: 16),
+                        _buildPasswordField(
+                          'Password',
+                          passwordController,
+                          isObscurePassword,
+                          (value) {
+                            setState(
+                              () => isObscurePassword = !isObscurePassword,
+                            );
+                          },
+                          validatePassword,
+                          passwordError,
+                        ),
+                        SizedBox(height: 16),
+                        _buildPasswordField(
+                          'Confirm Password',
+                          confirmPasswordController,
+                          isObscureConfirmPassword,
+                          (value) {
+                            setState(
+                              () =>
+                                  isObscureConfirmPassword =
+                                      !isObscureConfirmPassword,
+                            );
+                          },
+                          null,
+                          null,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+
+                // Submit Button
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed:
+                      isLoading
+                          ? null
+                          : () async {
+                            if (isFormValid()) {
+                              setState(() => isLoading = true);
+                              await signUpUser();
+                              setState(() => isLoading = false);
+                            }
+                          },
+                  child:
+                      isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text('Creating Account...'),
+                            ],
+                          )
+                          : Text('Sign Up', style: TextStyle(fontSize: 16)),
+                ),
+                SizedBox(height: 16),
+
+                // Sign In Link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Already have an account?'),
+                    TextButton(
+                      onPressed: () => Navigator.pushNamed(context, '/home'),
+                      child: Text(
+                        'Sign In',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

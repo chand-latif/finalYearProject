@@ -63,7 +63,9 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       }
     } catch (e) {
       print('Error fetching stats: $e');
-      setState(() => isLoading = false);
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 

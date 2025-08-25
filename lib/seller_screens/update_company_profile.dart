@@ -37,7 +37,8 @@ class _UpdateCompanyProfileScreenState
   String? companyLogoUrl;
   File? newProfilePicture;
   File? newCompanyLogo;
-  bool isLoading = true;
+  bool isLoading = false;
+  bool isLoadingSaveHours = false;
   final Map<String, TimeOfDay?> _workingHoursStart = {};
   final Map<String, TimeOfDay?> _workingHoursEnd = {};
   final Map<String, bool> _dayOff = {
@@ -275,7 +276,7 @@ class _UpdateCompanyProfileScreenState
 
   Future<void> _updateWorkingHours() async {
     setState(() {
-      isLoading = true;
+      isLoadingSaveHours = true;
     });
 
     try {
@@ -350,7 +351,7 @@ class _UpdateCompanyProfileScreenState
       );
     } finally {
       setState(() {
-        isLoading = false;
+        isLoadingSaveHours = false;
       });
     }
   }
@@ -374,7 +375,6 @@ class _UpdateCompanyProfileScreenState
           profilePictureUrl = data['profilePicture'] ?? '';
           companyLogoUrl = data['companyLogo'] ?? '';
           // Set initial status
-          isLoading = false;
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -453,16 +453,18 @@ class _UpdateCompanyProfileScreenState
       }
 
       var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = json.decode(responseBody);
       // var responseBody = await response.stream.bytesToString();
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && jsonResponse['statusCode'] == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Company Profile Updated Successfully!'),
             backgroundColor: Colors.green,
           ),
         );
-        // Navigator.pop(context);
+        Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -730,22 +732,40 @@ class _UpdateCompanyProfileScreenState
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        ElevatedButton.icon(
-                          onPressed: _updateWorkingHours,
-                          icon: Icon(Icons.save, size: 18),
-                          label: Text('Save Hours'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
+                        isLoadingSaveHours
+                            ? Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                                SizedBox(width: 12),
+                                Text('Updating Hours...'),
+                              ],
+                            )
+                            : ElevatedButton.icon(
+                              onPressed: _updateWorkingHours,
+                              icon: Icon(Icons.save, size: 18),
+                              label: Text('Save Hours'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                     SizedBox(height: 8),

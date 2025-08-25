@@ -742,207 +742,209 @@ class _BookServiceScreenState extends State<BookServiceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text('Book Service'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Booking Details Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Booking Details',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: descriptionController,
-                        decoration: _buildInputDecoration(
-                          'Issue Description',
-                          Icons.description,
-                        ),
-                        maxLines: 3,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true ? 'Required' : null,
-                      ),
-                      SizedBox(height: 16),
-                      // Phone number field
-                      TextFormField(
-                        controller: phoneController,
-                        keyboardType: TextInputType.number,
-                        decoration: _buildInputDecoration(
-                          'Phone Number (11 digits)',
-                          Icons.phone,
-                        ),
-                        maxLength: 11,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Phone number required';
-                          }
-                          if (!RegExp(r'^\d{11}$').hasMatch(value)) {
-                            return 'Enter exactly 11 digits';
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      buildAddressSearchSection(),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // Date & Time Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Preferred Time',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      InkWell(
-                        onTap: () async {
-                          final date = await showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(Duration(days: 30)),
-                          );
-                          if (date != null) {
-                            final time = await showTimePicker(
-                              context: context,
-                              initialTime: TimeOfDay.now(),
-                            );
-                            if (time != null) {
-                              setState(() {
-                                proposedTime = DateTime(
-                                  date.year,
-                                  date.month,
-                                  date.day,
-                                  time.hour,
-                                  time.minute,
-                                );
-                              });
-                            }
-                          }
-                        },
-                        child: Container(
-                          padding: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                proposedTime != null
-                                    ? '${proposedTime!.day}/${proposedTime!.month}/${proposedTime!.year} ${proposedTime!.hour.toString().padLeft(2, '0')}:${proposedTime!.minute.toString().padLeft(2, '0')}'
-                                    : 'Select date and time',
-                                style: TextStyle(
-                                  color:
-                                      proposedTime == null
-                                          ? Colors.grey
-                                          : Colors.black,
-                                ),
-                              ),
-                              Icon(
-                                Icons.calendar_today,
-                                color: AppColors.primary,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // Image Upload Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: buildImageSection(),
-                ),
-              ),
-              SizedBox(height: 24),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: isLoading ? null : submitBooking,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  minimumSize: Size(double.infinity, 50),
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: Colors.grey[50],
+        appBar: AppBar(
+          title: Text('Book Service'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Booking Details Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Booking Details',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: descriptionController,
+                          decoration: _buildInputDecoration(
+                            'Issue Description',
+                            Icons.description,
+                          ),
+                          maxLines: 3,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true ? 'Required' : null,
+                        ),
+                        SizedBox(height: 16),
+                        // Phone number field
+                        TextFormField(
+                          controller: phoneController,
+                          keyboardType: TextInputType.number,
+                          decoration: _buildInputDecoration(
+                            'Phone Number (11 digits)',
+                            Icons.phone,
+                          ),
+                          maxLength: 11,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Phone number required';
+                            }
+                            if (!RegExp(r'^\d{11}$').hasMatch(value)) {
+                              return 'Enter exactly 11 digits';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        buildAddressSearchSection(),
+                      ],
+                    ),
                   ),
                 ),
-                child:
-                    isLoading
-                        ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
+                SizedBox(height: 16),
+
+                // Date & Time Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Preferred Time',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        InkWell(
+                          onTap: () async {
+                            final date = await showDatePicker(
+                              context: context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime.now(),
+                              lastDate: DateTime.now().add(Duration(days: 30)),
+                            );
+                            if (date != null) {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.now(),
+                              );
+                              if (time != null) {
+                                setState(() {
+                                  proposedTime = DateTime(
+                                    date.year,
+                                    date.month,
+                                    date.day,
+                                    time.hour,
+                                    time.minute,
+                                  );
+                                });
+                              }
+                            }
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey[300]!),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  proposedTime != null
+                                      ? '${proposedTime!.day}/${proposedTime!.month}/${proposedTime!.year} ${proposedTime!.hour.toString().padLeft(2, '0')}:${proposedTime!.minute.toString().padLeft(2, '0')}'
+                                      : 'Select date and time',
+                                  style: TextStyle(
+                                    color:
+                                        proposedTime == null
+                                            ? Colors.grey
+                                            : Colors.black,
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.calendar_today,
+                                  color: AppColors.primary,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+
+                // Image Upload Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: buildImageSection(),
+                  ),
+                ),
+                SizedBox(height: 24),
+
+                // Submit Button
+                ElevatedButton(
+                  onPressed: isLoading ? null : submitBooking,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:
+                      isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 12),
-                            Text('Booking Service...'),
-                          ],
-                        )
-                        : Text('Book Service'),
-              ),
-              SizedBox(height: 24),
-            ],
+                              SizedBox(width: 12),
+                              Text('Booking Service...'),
+                            ],
+                          )
+                          : Text('Book Service'),
+                ),
+                SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

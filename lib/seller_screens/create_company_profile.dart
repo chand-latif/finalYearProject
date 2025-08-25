@@ -98,10 +98,15 @@ class _CreateCompanyProfileScreenState
   }
 
   Future<void> pickTime(BuildContext context, String day, bool isStart) async {
+    // Explicitly unfocus any text field before showing time picker
+    FocusScope.of(context).unfocus();
+
     final picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(hour: 9, minute: 0),
       builder: (context, child) {
+        // Keep keyboard unfocused after dialog closes
+        FocusScope.of(context).unfocus();
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: ColorScheme.light(
@@ -116,6 +121,7 @@ class _CreateCompanyProfileScreenState
         );
       },
     );
+
     if (picked != null) {
       setState(() {
         if (isStart) {
@@ -124,6 +130,8 @@ class _CreateCompanyProfileScreenState
           workingHoursEnd[day] = picked;
         }
       });
+      // Ensure keyboard stays dismissed after state update
+      FocusScope.of(context).unfocus();
     }
   }
 
@@ -245,37 +253,24 @@ class _CreateCompanyProfileScreenState
 
       var response = await request.send();
       var responseBody = await response.stream.bytesToString();
+      var jsonResponse = json.decode(responseBody);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && jsonResponse['statusCode'] == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Company Profile Created Successfully!'),
             backgroundColor: Colors.green,
           ),
         );
-        // Replace current navigation with this to prevent going back
         Navigator.pushNamedAndRemoveUntil(
           context,
           '/sellerHome',
-          (route) => false, // This will remove all previous routes
+          (route) => false,
         );
       } else {
-        // Parse error response if possible
-        String errorMessage = 'Error: ${response.statusCode}';
-        try {
-          var errorData = json.decode(responseBody);
-          if (errorData is Map && errorData.containsKey('message')) {
-            errorMessage = errorData['message'];
-          } else if (errorData is Map && errorData.containsKey('errors')) {
-            errorMessage = errorData['errors'].toString();
-          }
-        } catch (e) {
-          errorMessage =
-              responseBody.isNotEmpty
-                  ? responseBody
-                  : 'Error: ${response.statusCode}';
-        }
-
+        // Show the error message from the response
+        String errorMessage =
+            jsonResponse['message'] ?? 'Failed to create company profile';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(errorMessage), backgroundColor: Colors.red),
         );
@@ -389,264 +384,273 @@ class _CreateCompanyProfileScreenState
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Profile Images Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Company Images',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            '(Required)',
-                            style: TextStyle(color: Colors.red, fontSize: 14),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          buildCompanyProfileWidget(true),
-                          buildCompanyLogoWidget(false),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // Company Information Form
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Basic Information',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: companyNameController,
-                        decoration: _buildInputDecoration(
-                          'Company Name',
-                          Icons.business,
-                        ),
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter company name'
-                                    : null,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: phoneNumberController,
-
-                        decoration: _buildInputDecoration(
-                          'Phone Number',
-                          Icons.phone,
-                        ),
-
-                        keyboardType: TextInputType.phone,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(11),
-                        ],
-                        onChanged: (value) {
-                          validatePhone(value);
-                        },
-                        forceErrorText: phoneError,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return phoneError;
-                          }
-                          if (phoneError != null) {
-                            return phoneError;
-                          }
-                          return null;
-                        },
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: whatsappNumberController,
-                        decoration: _buildInputDecoration(
-                          'WhatsApp Number',
-                          FontAwesomeIcons.whatsapp,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(11),
-                        ],
-                        onChanged: (value) {
-                          validateWhatsappNumber(value);
-                        },
-                        forceErrorText: whatsappNumberError,
-                        keyboardType: TextInputType.phone,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter WhatsApp number'
-                                    : null,
-                      ),
-                      SizedBox(height: 16),
-                      TextFormField(
-                        controller: companyAddressController,
-                        decoration: _buildInputDecoration(
-                          'Company Address',
-                          Icons.location_on,
-                        ),
-                        maxLines: 2,
-                        validator:
-                            (value) =>
-                                value?.isEmpty ?? true
-                                    ? 'Please enter company address'
-                                    : null,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 16),
-
-              // Working Hours Card
-              Card(
-                color: Colors.white,
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Working Hours',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Set your working hours or mark days as off',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                      ),
-                      SizedBox(height: 16),
-                      Column(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 8,
-                            ),
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
-                                    'Day',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Center(child: Text('Start')),
-                                      ),
-                                      SizedBox(width: 40),
-                                      Expanded(
-                                        child: Center(child: Text('End')),
-                                      ),
-                                      SizedBox(width: 48),
-                                      Text('Off'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Divider(thickness: 1),
-                          ...dayOff.keys
-                              .map((day) => buildTimePickerRow(day))
-                              .toList(),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 24),
-
-              // Submit Button
-              ElevatedButton(
-                onPressed: isLoading ? null : submitForm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  minimumSize: Size(double.infinity, 50),
+      body: GestureDetector(
+        onTap: () {
+          // Dismiss keyboard and remove focus from any TextField
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Profile Images Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(15),
                   ),
-                ),
-                child:
-                    isLoading
-                        ? Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
-                                strokeWidth: 2,
+                            Text(
+                              'Company Images',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(width: 12),
-                            Text('Creating Profile...'),
+                            Text(
+                              '(Required)',
+                              style: TextStyle(color: Colors.red, fontSize: 14),
+                            ),
                           ],
-                        )
-                        : Text('Create Profile'),
-              ),
-              SizedBox(height: 24),
-            ],
+                        ),
+                        SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            buildCompanyProfileWidget(true),
+                            buildCompanyLogoWidget(false),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+
+                // Company Information Form
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Basic Information',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: companyNameController,
+                          decoration: _buildInputDecoration(
+                            'Company Name',
+                            Icons.business,
+                          ),
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Please enter company name'
+                                      : null,
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: phoneNumberController,
+
+                          decoration: _buildInputDecoration(
+                            'Phone Number',
+                            Icons.phone,
+                          ),
+
+                          keyboardType: TextInputType.phone,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(11),
+                          ],
+                          onChanged: (value) {
+                            validatePhone(value);
+                          },
+                          forceErrorText: phoneError,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return phoneError;
+                            }
+                            if (phoneError != null) {
+                              return phoneError;
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: whatsappNumberController,
+                          decoration: _buildInputDecoration(
+                            'WhatsApp Number',
+                            FontAwesomeIcons.whatsapp,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(11),
+                          ],
+                          onChanged: (value) {
+                            validateWhatsappNumber(value);
+                          },
+                          forceErrorText: whatsappNumberError,
+                          keyboardType: TextInputType.phone,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Please enter WhatsApp number'
+                                      : null,
+                        ),
+                        SizedBox(height: 16),
+                        TextFormField(
+                          controller: companyAddressController,
+                          decoration: _buildInputDecoration(
+                            'Company Address',
+                            Icons.location_on,
+                          ),
+                          maxLines: 2,
+                          validator:
+                              (value) =>
+                                  value?.isEmpty ?? true
+                                      ? 'Please enter company address'
+                                      : null,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+
+                // Working Hours Card
+                Card(
+                  color: Colors.white,
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Working Hours',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Set your working hours or mark days as off',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                        SizedBox(height: 16),
+                        Column(
+                          children: [
+                            Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 8,
+                              ),
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      'Day',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Center(child: Text('Start')),
+                                        ),
+                                        SizedBox(width: 40),
+                                        Expanded(
+                                          child: Center(child: Text('End')),
+                                        ),
+                                        SizedBox(width: 48),
+                                        Text('Off'),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Divider(thickness: 1),
+                            ...dayOff.keys
+                                .map((day) => buildTimePickerRow(day))
+                                .toList(),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(height: 24),
+
+                // Submit Button
+                ElevatedButton(
+                  onPressed: isLoading ? null : submitForm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:
+                      isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text('Creating Profile...'),
+                            ],
+                          )
+                          : Text('Create Profile'),
+                ),
+                SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

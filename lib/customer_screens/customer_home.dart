@@ -446,7 +446,7 @@ class _CustomerHomeState extends State<CustomerHome> {
     return SizedBox(
       height: 180,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: ListView(
           scrollDirection: Axis.horizontal,
           physics: BouncingScrollPhysics(),
@@ -587,30 +587,33 @@ class _CustomerHomeState extends State<CustomerHome> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundColor: Colors.grey[200],
-              backgroundImage: NetworkImage(logoUrl),
-              onBackgroundImageError: (_, __) {},
-            ),
-            SizedBox(height: 12),
-            Text(
-              name,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            SizedBox(height: 4),
-            Text(rating, style: TextStyle(color: Colors.amber, fontSize: 12)),
-            SizedBox(height: 4),
-            Text(
-              services,
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.grey[200],
+                backgroundImage: NetworkImage(logoUrl),
+                onBackgroundImageError: (_, __) {},
+              ),
+              SizedBox(height: 12),
+              Text(
+                name,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              SizedBox(height: 4),
+              Text(rating, style: TextStyle(color: Colors.amber, fontSize: 12)),
+              SizedBox(height: 4),
+              Text(
+                services,
+                style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              ),
+            ],
+          ),
         ),
       ),
     );

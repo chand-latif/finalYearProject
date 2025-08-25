@@ -202,6 +202,16 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         'Content-Type': 'multipart/form-data',
       });
 
+      // Get latitude and longitude either from new selection or initial data
+      final latitude =
+          pickedLat?.toString() ??
+          widget.initialData['latitude']?.toString() ??
+          '';
+      final longitude =
+          pickedLng?.toString() ??
+          widget.initialData['longitude']?.toString() ??
+          '';
+
       // Add form fields
       request.fields.addAll({
         'ServiceId': widget.serviceId.toString(),
@@ -213,8 +223,8 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         'ServiceType': serviceType,
         'ProviderName': providerNameController.text,
         'Address': addressController.text,
-        'Latitude': pickedLat?.toString() ?? '',
-        'Longitude': pickedLng?.toString() ?? '',
+        'Latitude': latitude,
+        'Longitude': longitude,
       });
 
       // Add service image if selected

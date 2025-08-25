@@ -485,6 +485,9 @@ class _UpdateBookingScreenState extends State<UpdateBookingScreen> {
                       SizedBox(height: 16),
                       InkWell(
                         onTap: () async {
+                          // Remove keyboard focus before showing date picker
+                          FocusScope.of(context).unfocus();
+                          
                           final date = await showDatePicker(
                             context: context,
                             initialDate: proposedTime ?? DateTime.now(),

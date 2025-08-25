@@ -90,6 +90,7 @@ class _AllCompaniesScreenState extends State<AllCompaniesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('All Companies'),
         backgroundColor: AppColors.primary,
@@ -121,6 +122,7 @@ class _AllCompaniesScreenState extends State<AllCompaniesScreen> {
                       );
                     },
                     child: Card(
+                      color: Colors.white,
                       margin: EdgeInsets.only(bottom: 16),
                       child: Column(
                         children: [

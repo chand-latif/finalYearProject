@@ -280,6 +280,10 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                                                             service['serviceType'],
                                                         'serviceImage':
                                                             service['serviceImage'],
+                                                        'latitude':
+                                                            service['latitude'], // Add this
+                                                        'longitude':
+                                                            service['longitude'], // Add this
                                                       },
                                                     ),
                                               ),
