@@ -376,6 +376,26 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
           ),
           SizedBox(width: 8),
           FilterChip(
+            label: Text('Accepted'),
+            selected: selectedStatus == 'Accept',
+            onSelected: (_) {
+              setState(() => selectedStatus = 'Accept');
+              fetchBookings('Accept');
+            },
+            backgroundColor: Colors.grey[200],
+            selectedColor: Colors.green.withOpacity(0.2),
+            checkmarkColor: Colors.green,
+            labelStyle: TextStyle(
+              color:
+                  selectedStatus == 'Accept' ? Colors.green : Colors.grey[700],
+              fontWeight:
+                  selectedStatus == 'Accept'
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+            ),
+          ),
+          SizedBox(width: 8),
+          FilterChip(
             label: Text('In Progress'),
             selected: selectedStatus == 'InProgress',
             onSelected: (_) {
@@ -396,26 +416,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       : FontWeight.normal,
             ),
           ),
-          SizedBox(width: 8),
-          FilterChip(
-            label: Text('Accepted'),
-            selected: selectedStatus == 'Accept',
-            onSelected: (_) {
-              setState(() => selectedStatus = 'Accept');
-              fetchBookings('Accept');
-            },
-            backgroundColor: Colors.grey[200],
-            selectedColor: Colors.green.withOpacity(0.2),
-            checkmarkColor: Colors.green,
-            labelStyle: TextStyle(
-              color:
-                  selectedStatus == 'Accept' ? Colors.green : Colors.grey[700],
-              fontWeight:
-                  selectedStatus == 'Accept'
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-            ),
-          ),
+
           SizedBox(width: 8),
           FilterChip(
             label: Text('Completed'),
@@ -485,7 +486,7 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                       itemBuilder: (context, index) => _buildBookingShimmer(),
                     )
                     : bookings.isEmpty
-                    ? Center(child: Text('No bookings found'))
+                    ? Center(child: Text('No bookings yet'))
                     : ListView.builder(
                       padding: EdgeInsets.all(16),
                       itemCount: bookings.length,

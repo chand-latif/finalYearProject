@@ -127,6 +127,7 @@ class _VerificationOTPState extends State<VerificationOTP> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Verification OTP'),
         backgroundColor: AppColors.primary,

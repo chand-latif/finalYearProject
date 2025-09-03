@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import '../theme.dart';
 import 'package:http/http.dart' as http;
 import '../verfication_otp.dart';
@@ -32,6 +34,10 @@ class _SignUpState extends State<SignUp> {
   String? phoneError;
   String? passwordError;
   String? nameError;
+
+  // Image picking variables
+  File? _selectedImage;
+  final ImagePicker _picker = ImagePicker();
 
   // Email validation
   void validateEmail(String email) {
@@ -97,6 +103,202 @@ class _SignUpState extends State<SignUp> {
         passwordController.text == confirmPasswordController.text;
   }
 
+  // Add this method to handle image picking
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        setState(() {
+          _selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error picking image: $e')));
+    }
+  }
+
+  // Add this method to show image picker options
+  void _showImagePickerOptions() {
+    showModalBottomSheet(
+      context: context,
+      builder:
+          (context) => Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Choose Profile Picture',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _pickImage(ImageSource.camera);
+                      },
+                      icon: Icon(Icons.camera),
+                      label: Text('Camera'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _pickImage(ImageSource.gallery);
+                      },
+                      icon: Icon(Icons.photo_library),
+                      label: Text('Gallery'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
+  // Add this widget to display the selected image and provide an option to change it
+  Widget _buildImagePicker() {
+    return Column(
+      children: [
+        Stack(
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[200],
+              backgroundImage:
+                  _selectedImage != null ? FileImage(_selectedImage!) : null,
+              child:
+                  _selectedImage == null
+                      ? Icon(Icons.person, size: 50, color: Colors.grey[400])
+                      : null,
+            ),
+            Positioned(
+              bottom: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: _showImagePickerOptions,
+                child: Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+        TextButton(
+          onPressed: _showImagePickerOptions,
+          child: Text('Choose Profile Picture'),
+        ),
+      ],
+    );
+  }
+
+  // Update the signUpUser method to include image uploading
+  Future<void> signUpUser() async {
+    // Construct URL with query parameters
+    final baseUrl = "https://fixease.pk/api/User/SignUP";
+    final queryParams = {
+      'UserEmail': emailController.text,
+      'Password': passwordController.text,
+      'UserType': widget.accountType,
+      'UserName': nameController.text,
+      'Phone': phoneController.text,
+    };
+
+    final uri = Uri.parse(baseUrl).replace(queryParameters: queryParams);
+
+    try {
+      // Create multipart request
+      var request = http.MultipartRequest('POST', uri);
+
+      // Add image file if selected
+      if (_selectedImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'UserPicture',
+            _selectedImage!.path,
+          ),
+        );
+      }
+
+      // Send the request
+      final response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      final jsonResponse = jsonDecode(responseData);
+
+      if (response.statusCode == 200 && jsonResponse["statusCode"] == 200) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("User registered successfully")));
+
+        await sendOtp(emailController.text);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VerificationOTP(email: emailController.text),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(jsonResponse["message"] ?? "Registration failed"),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Signup error: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+    }
+  }
+
+  Future<void> sendOtp(String email) async {
+    final url = Uri.parse("https://fixease.pk/api/User/ResendVerificationOTP");
+
+    final body = {"email": email};
+
+    try {
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // OTP sent successfully
+        print("OTP sent to $email");
+      } else {
+        print(
+          "Failed to send OTP: ${responseData["message"] ?? "Unknown error"}",
+        );
+      }
+    } catch (e) {
+      print("Error sending OTP: $e");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -143,6 +345,10 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                 ),
+                SizedBox(height: 20),
+
+                // Profile Picture Picker
+                _buildImagePicker(), // Add image picker widget
                 SizedBox(height: 20),
 
                 // Form Card
@@ -374,164 +580,8 @@ class _SignUpState extends State<SignUp> {
       ],
     );
   }
-
-  // HttpClient _getHttpClient() {
-  //   final httpClient =
-  //       HttpClient()
-  //         ..badCertificateCallback =
-  //             (X509Certificate cert, String host, int port) => true;
-  //   return httpClient;
-  // }
-
-  // void navigateBasedOnAccountType(String accountType) {
-  //   if (accountType == 'seller') {
-  //     Navigator.pushNamed(context, 'createCompanyProfile');
-
-  //   } else if (accountType == 'customer') {
-  //     Navigator.pushNamed(context, 'createCompanyProfile');
-  //   } else {
-  //     // Default or unknown type
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text('Invalid account type')));
-  //   }
-  // }
-
-  Future<void> signUpUser() async {
-    final url = Uri.parse("https://fixease.pk/api/User/SignUP");
-
-    final body = {
-      "userEmail": emailController.text,
-      "password": passwordController.text,
-      "username": nameController.text,
-      "phoneNo": phoneController.text,
-      "userType": widget.accountType.toString(),
-    };
-
-    try {
-      // final IOClient ioClient = IOClient(_getHttpClient());
-      // final response = await ioClient.post(
-      //   url,
-      //   headers: {"Content-Type": "application/json"},
-      //   body: jsonEncode(body),
-      // );
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
-
-      final responseData = jsonDecode(response.body);
-
-      if (response.statusCode == 200 && responseData["statusCode"] == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("User registered successfully")));
-
-        await sendOtp(emailController.text);
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VerificationOTP(email: emailController.text),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(responseData["message"] ?? "Registration failed"),
-          ),
-        );
-      }
-    } catch (e) {
-      print("Signup error: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
-    }
-  }
-
-  // Future<void> signUpUser() async {
-  //   final url = Uri.parse("https://fixease.pk/api/User/SignUP");
-
-  //   final body = {
-  //     "userEmail": emailController.text,
-  //     "password": passwordController.text,
-  //     "phoneNo": phoneController.text,
-  //     "userType": "customer",
-  //   };
-
-  //   try {
-  //     final response = await http.post(
-  //       url,
-  //       headers: {"Content-Type": "application/json"},
-  //       body: jsonEncode(body),
-  //     );
-
-  //     final responseData = jsonDecode(response.body);
-  //     if (response.statusCode == 200) {
-  //       if (responseData["statusCode"] == 200) {
-  //         // User registered
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text("User registered successfully")),
-  //         );
-  //         // Now send OTP
-  //         await sendOtp(emailController.text);
-
-  //         // Navigate to VerificationOTP screen manually with email
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(
-  //             builder:
-  //                 (context) => VerificationOTP(email: emailController.text),
-  //           ),
-  //         );
-  //       } else {
-  //         // Already exists or error
-  //         ScaffoldMessenger.of(context).showSnackBar(
-  //           SnackBar(content: Text(responseData["message"] ?? "Error")),
-  //         );
-  //       }
-  //     } else {
-  //       ScaffoldMessenger.of(
-  //         context,
-  //       ).showSnackBar(SnackBar(content: Text("Server error")));
-  //     }
-  //   } catch (e) {
-  //     print("Signup error: $e");
-  //     ScaffoldMessenger.of(
-  //       context,
-  //     ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
-  //   }
-  // }
-
-  Future<void> sendOtp(String email) async {
-    final url = Uri.parse("https://fixease.pk/api/User/ResendVerificationOTP");
-
-    final body = {"email": email};
-
-    try {
-      final response = await http.put(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
-      );
-
-      final responseData = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        // OTP sent successfully
-        print("OTP sent to $email");
-      } else {
-        print(
-          "Failed to send OTP: ${responseData["message"] ?? "Unknown error"}",
-        );
-      }
-    } catch (e) {
-      print("Error sending OTP: $e");
-    }
-  }
 }
+
 // }
 
 Future<void> sendOtp(String email) async {

@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'nav_bar_customer.dart';
+import 'package:fix_easy/customer_screens/update_profile_screen.dart'; // Import the update profile page
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({super.key});
@@ -14,12 +15,13 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  // Add these variables
   String userName = '';
-
   String userEmail = '';
-
   String joiningDate = '';
   int? userId;
+  String userPhone = '';
+  String? profilePicture;
 
   @override
   void initState() {
@@ -50,6 +52,8 @@ class _ProfilePageState extends State<ProfilePage> {
           userEmail = userData['userEmail'] ?? '';
           joiningDate = userData['createdDate']?.split('T')[0] ?? '';
           userId = userData['userId'];
+          userPhone = userData['phone'] ?? '';
+          profilePicture = userData['userPicture'];
         });
       }
     } else {
@@ -61,11 +65,7 @@ class _ProfilePageState extends State<ProfilePage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token'); // Remove JWT token
 
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      '/home', // Replace with your login route
-      (route) => false,
-    );
+    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
   }
 
   Future<void> _deleteAccount(BuildContext context) async {
@@ -221,18 +221,27 @@ class _ProfilePageState extends State<ProfilePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Header
+              // Update Profile Header
               Center(
                 child: Column(
                   children: [
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: AppColors.primary.withOpacity(0.1),
-                      child: Icon(
-                        Icons.person,
-                        size: 50,
-                        color: AppColors.primary,
-                      ),
+                      backgroundImage:
+                          profilePicture != null
+                              ? NetworkImage(
+                                'https://fixease.pk/$profilePicture',
+                              )
+                              : null,
+                      child:
+                          profilePicture == null
+                              ? Icon(
+                                Icons.person,
+                                size: 50,
+                                color: AppColors.primary,
+                              )
+                              : null,
                     ),
                     SizedBox(height: 16),
                     Text(
@@ -251,7 +260,7 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               SizedBox(height: 32),
 
-              // Account Information Card
+              // Update Account Information Card
               Container(
                 padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -270,7 +279,20 @@ class _ProfilePageState extends State<ProfilePage> {
                         color: Colors.grey[800],
                       ),
                     ),
-                    SizedBox(height: 16),
+
+                    ListTile(
+                      leading: Icon(Icons.email, color: AppColors.primary),
+                      title: Text('Email'),
+                      subtitle: Text(userEmail),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.phone, color: AppColors.primary),
+                      title: Text('Phone'),
+                      subtitle: Text(userPhone),
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                    SizedBox(height: 0),
                     ListTile(
                       leading: Icon(
                         Icons.calendar_today,
@@ -278,12 +300,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       title: Text('Member Since'),
                       subtitle: Text(joiningDate),
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    ListTile(
-                      leading: Icon(Icons.email, color: AppColors.primary),
-                      title: Text('Email'),
-                      subtitle: Text(userEmail),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ],
@@ -330,6 +346,39 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                 ),
+              ),
+
+              // Add Edit Profile Button
+              SizedBox(height: 24),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => UpdateProfileScreen(
+                            userId: userId!,
+                            name: userName,
+                            email: userEmail,
+                            phone: userPhone,
+                            profilePicture: profilePicture,
+                          ),
+                    ),
+                  ).then((value) {
+                    if (value == true) {
+                      fetchUserInfo(); // Refresh profile data
+                    }
+                  });
+                },
+                child: Text('Edit Profile'),
               ),
             ],
           ),

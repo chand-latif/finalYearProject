@@ -247,6 +247,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                   title: Text(
                     widget.company['companyName'] ?? 'Company',
                     style: TextStyle(
+                      fontSize: 18,
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),

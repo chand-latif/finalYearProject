@@ -52,7 +52,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
   int? selectedCategoryId;
   File? serviceImage;
   String? existingImageUrl;
-  String serviceType = 'Published';
+  // String serviceType = 'Published';
   bool isLoading = true;
 
   // Add new state variables for location
@@ -79,7 +79,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
     selectedCategoryId = serviceCategories[categoryName];
 
     // Set initial service type
-    serviceType = widget.initialData['serviceType'] ?? 'Published';
+    // serviceType = widget.initialData['serviceType'] ?? 'Published';
 
     // Set initial image URL
     existingImageUrl = widget.initialData['serviceImage'];
@@ -220,7 +220,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         'ServiceDescription': descriptionController.text,
         'ContactNumber': contactNumberController.text,
         'ServiceTags': serviceTagsController.text,
-        'ServiceType': serviceType,
+        'ServiceType': "Published",
         'ProviderName': providerNameController.text,
         'Address': addressController.text,
         'Latitude': latitude,
@@ -538,7 +538,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Service Details',
+                          'Service Category',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -548,7 +548,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                         DropdownButtonFormField<String>(
                           value: selectedCategory,
                           decoration: _buildInputDecoration(
-                            'Service Category',
+                            'Category',
                             Icons.category,
                           ),
                           items:
@@ -571,24 +571,24 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                                       : null,
                         ),
                         SizedBox(height: 16),
-                        DropdownButtonFormField<String>(
-                          value: serviceType,
-                          decoration: _buildInputDecoration(
-                            'Service Type',
-                            Icons.work,
-                          ),
-                          items:
-                              ['Published', 'Draft'].map((type) {
-                                return DropdownMenuItem<String>(
-                                  value: type,
-                                  child: Text(type),
-                                );
-                              }).toList(),
-                          onChanged: (newValue) {
-                            if (newValue != null)
-                              setState(() => serviceType = newValue);
-                          },
-                        ),
+                        // DropdownButtonFormField<String>(
+                        //   value: serviceType,
+                        //   decoration: _buildInputDecoration(
+                        //     'Service Type',
+                        //     Icons.work,
+                        //   ),
+                        //   items:
+                        //       ['Published', 'Draft'].map((type) {
+                        //         return DropdownMenuItem<String>(
+                        //           value: type,
+                        //           child: Text(type),
+                        //         );
+                        //       }).toList(),
+                        //   onChanged: (newValue) {
+                        //     if (newValue != null)
+                        //       setState(() => serviceType = newValue);
+                        //   },
+                        // ),
                       ],
                     ),
                   ),

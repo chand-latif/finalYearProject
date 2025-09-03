@@ -253,8 +253,8 @@ class SellerServiceDetailsScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          if (service['Latitude'] != null &&
-                              service['Longitude'] != null) ...[
+                          if (service['latitude'] != null &&
+                              service['longitude'] != null) ...[
                             SizedBox(height: 12),
                             SizedBox(
                               width: double.infinity,

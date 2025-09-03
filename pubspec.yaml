@@ -40,7 +40,7 @@ dependencies:
   flutter_map_location_picker: ^0.0.4
   geolocator: ^10.1.0
   geocoding: ^2.1.1
-  image_picker: ^1.2.0
+  image_picker: ^1.0.4
   path_provider: ^2.1.5
 
 dev_dependencies:
@@ -54,6 +54,14 @@ dev_dependencies:
   url_launcher: ^6.2.1
   font_awesome_flutter: ^10.7.0
   shimmer: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+flutter_icons:
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/FixEasy.png"   # path of your new icon
+  min_sdk_android: 21                 # required for adaptive icons
+
   
 
   # The "flutter_lints" package below contains a set of recommended lints to

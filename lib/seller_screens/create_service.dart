@@ -428,7 +428,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         'ServiceDescription': descriptionController.text,
         'ContactNumber': contactNumberController.text,
         'ServiceTags': serviceTagsController.text,
-        'serviceType': serviceType,
+        'serviceType': 'Published',
         'ProviderName': providerNameController.text,
         'Address': selectedAddress!,
         'Latitude': pickedLat.toString(),
@@ -557,7 +557,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Service Details',
+                            'Service Category',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -568,7 +568,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                           DropdownButtonFormField<String>(
                             value: selectedCategory,
                             decoration: _buildInputDecoration(
-                              'Service Category',
+                              'Category',
                               Icons.category,
                             ),
                             items:
@@ -594,24 +594,24 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                           SizedBox(height: 16),
 
                           // Service Type Dropdown
-                          DropdownButtonFormField<String>(
-                            value: serviceType,
-                            decoration: _buildInputDecoration(
-                              'Service Type',
-                              Icons.work,
-                            ),
-                            items:
-                                ['Published', 'Draft'].map((type) {
-                                  return DropdownMenuItem<String>(
-                                    value: type,
-                                    child: Text(type),
-                                  );
-                                }).toList(),
-                            onChanged: (newValue) {
-                              if (newValue != null)
-                                setState(() => serviceType = newValue);
-                            },
-                          ),
+                          // DropdownButtonFormField<String>(
+                          //   value: serviceType,
+                          //   decoration: _buildInputDecoration(
+                          //     'Service Type',
+                          //     Icons.work,
+                          //   ),
+                          //   items:
+                          //       ['Published', 'Draft'].map((type) {
+                          //         return DropdownMenuItem<String>(
+                          //           value: type,
+                          //           child: Text(type),
+                          //         );
+                          //       }).toList(),
+                          //   onChanged: (newValue) {
+                          //     if (newValue != null)
+                          //       setState(() => serviceType = newValue);
+                          //   },
+                          // ),
                         ],
                       ),
                     ),

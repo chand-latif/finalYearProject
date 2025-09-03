@@ -28,6 +28,11 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
   bool isLoading = true;
   List<Map<String, dynamic>> recentBookings = [];
 
+  // Company info
+  String? companyName;
+  String? companyLogo;
+  bool isLoadingCompanyInfo = true;
+
   @override
   void initState() {
     super.initState();
@@ -157,6 +162,8 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       if (!mounted) return;
       setState(() {
         companyId = data['data']['companyId'];
+        // After getting companyId, fetch company profile
+        fetchCompanyProfile();
       });
 
       // Then fetch company services to calculate rating
@@ -193,6 +200,38 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
       }
     } else {
       print('api call error');
+    }
+  }
+
+  // Add this new method
+  Future<void> fetchCompanyProfile() async {
+    try {
+      final response = await http.get(
+        Uri.parse(
+          "https://fixease.pk/api/CompanyProfile/ListCompanyProfile?CompanyId=$companyId",
+        ),
+        headers: {'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final companyData = data['data'];
+
+        if (mounted) {
+          setState(() {
+            companyName = companyData['companyName'];
+            companyLogo = companyData['companyLogo'];
+            isLoadingCompanyInfo = false;
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching company profile: $e');
+      if (mounted) {
+        setState(() {
+          isLoadingCompanyInfo = false;
+        });
+      }
     }
   }
 
@@ -246,41 +285,69 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 10.0,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Service Provider Dashboard',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              companyName ?? 'Loading...',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Welcome back! 👋',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white.withOpacity(0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!isLoadingCompanyInfo)
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            image:
+                                companyLogo != null
+                                    ? DecorationImage(
+                                      image: NetworkImage(
+                                        'https://fixease.pk$companyLogo',
+                                      ),
+                                      fit: BoxFit.cover,
+                                    )
+                                    : null,
+                          ),
+                          child:
+                              companyLogo == null
+                                  ? Icon(
+                                    Icons.business,
+                                    color: Colors.grey,
+                                    size: 30,
+                                  )
+                                  : null,
+                        )
+                      else
+                        Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
                               color: Colors.white,
+                              shape: BoxShape.circle,
                             ),
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            'Welcome back! 👋',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
                     ],
                   ),
                 ],
