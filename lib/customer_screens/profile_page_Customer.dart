@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'nav_bar_customer.dart';
 import 'package:fix_easy/customer_screens/update_profile_screen.dart'; // Import the update profile page
+import 'package:fix_easy/widgets/image_viewer.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({super.key});
@@ -225,23 +226,30 @@ class _ProfilePageState extends State<ProfilePage> {
               Center(
                 child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      backgroundImage:
-                          profilePicture != null
-                              ? NetworkImage(
-                                'https://fixease.pk/$profilePicture',
-                              )
-                              : null,
-                      child:
-                          profilePicture == null
-                              ? Icon(
-                                Icons.person,
-                                size: 50,
-                                color: AppColors.primary,
-                              )
-                              : null,
+                    GestureDetector(
+                      onTap:
+                          () => ImageViewer.showFullScreenImage(
+                            context,
+                            'https://fixease.pk/$profilePicture',
+                          ),
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: AppColors.primary.withOpacity(0.1),
+                        backgroundImage:
+                            profilePicture != null
+                                ? NetworkImage(
+                                  'https://fixease.pk/$profilePicture',
+                                )
+                                : null,
+                        child:
+                            profilePicture == null
+                                ? Icon(
+                                  Icons.person,
+                                  size: 50,
+                                  color: AppColors.primary,
+                                )
+                                : null,
+                      ),
                     ),
                     SizedBox(height: 16),
                     Text(

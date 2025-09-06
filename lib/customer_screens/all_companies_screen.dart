@@ -47,6 +47,7 @@ class _AllCompaniesScreenState extends State<AllCompaniesScreen> {
 
   Widget _buildCompanyShimmer() {
     return Card(
+      color: Colors.white,
       margin: EdgeInsets.only(bottom: 16),
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!,
