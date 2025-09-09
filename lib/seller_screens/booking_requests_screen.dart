@@ -24,6 +24,11 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
   String? currentAction; // Track which action is being performed
   String? selectedStatus; // Add this state variable
 
+  // Add new state variables
+  Map<String, Map<String, dynamic>?> latestNegotiations =
+      {}; // Store negotiations by bookingId
+  bool isLoadingNegotiation = false;
+
   @override
   void initState() {
     super.initState();
@@ -262,11 +267,11 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 16),
-      margin: EdgeInsets.only(top: 16),
+      padding: EdgeInsets.symmetric(vertical: 12),
+      margin: EdgeInsets.only(top: 0),
       decoration: BoxDecoration(
         color: statusColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: Colors.grey[200]!),
       ),
       child: Text(
@@ -350,20 +355,22 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
           ),
           SizedBox(width: 8),
           FilterChip(
-            label: Text('Accepted'),
-            selected: selectedStatus == 'Accept',
+            label: Text('Completed'),
+            selected: selectedStatus == 'finished',
             onSelected: (_) {
-              setState(() => selectedStatus = 'Accept');
-              fetchBookings('Accept');
+              setState(() => selectedStatus = 'finished');
+              fetchBookings('finished');
             },
             backgroundColor: Colors.grey[200],
             selectedColor: Colors.green.withOpacity(0.2),
             checkmarkColor: Colors.green,
             labelStyle: TextStyle(
               color:
-                  selectedStatus == 'Accept' ? Colors.green : Colors.grey[700],
+                  selectedStatus == 'finished'
+                      ? Colors.green
+                      : Colors.grey[700],
               fontWeight:
-                  selectedStatus == 'Accept'
+                  selectedStatus == 'finished'
                       ? FontWeight.bold
                       : FontWeight.normal,
             ),
@@ -388,30 +395,288 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
             ),
           ),
           SizedBox(width: 8),
-          FilterChip(
-            label: Text('Completed'),
-            selected: selectedStatus == 'Completed',
-            onSelected: (_) {
-              setState(() => selectedStatus = 'Completed');
-              fetchBookings('Completed');
-            },
-            backgroundColor: Colors.grey[200],
-            selectedColor: Colors.green.withOpacity(0.2),
-            checkmarkColor: Colors.green,
-            labelStyle: TextStyle(
-              color:
-                  selectedStatus == 'Completed'
-                      ? Colors.green
-                      : Colors.grey[700],
-              fontWeight:
-                  selectedStatus == 'Completed'
-                      ? FontWeight.bold
-                      : FontWeight.normal,
-            ),
-          ),
         ],
       ),
     );
+  }
+
+  Future<void> _fetchLatestNegotiation(int bookingId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.get(
+        Uri.parse(
+          'https://fixease.pk/api/BookingNegotiation/getLatestNegotiation?BookingId=$bookingId',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded'] == true) {
+          setState(() {
+            latestNegotiations = {
+              ...latestNegotiations,
+              bookingId.toString(): data['data'],
+            };
+          });
+        }
+      }
+    } catch (e) {
+      print('Error fetching negotiation: $e');
+    }
+  }
+
+  Future<void> _makeOffer(int bookingId, double price) async {
+    setState(() => isUpdatingStatus = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.post(
+        Uri.parse(
+          'https://fixease.pk/api/BookingNegotiation/CreateBookingNegotiation',
+        ),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'BookingId': bookingId.toString(),
+          'OfferedPrice': price.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Price offer submitted successfully'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await _fetchLatestNegotiation(bookingId);
+        } else {
+          throw Exception(data['message'] ?? 'Failed to submit offer');
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => isUpdatingStatus = false);
+    }
+  }
+
+  Future<void> _showPriceOfferDialog(int bookingId) async {
+    final priceController = TextEditingController();
+    return showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Make Price Offer'),
+            content: TextField(
+              controller: priceController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Enter Price',
+                prefixText: 'Rs. ',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final price = double.tryParse(priceController.text);
+                  if (price != null && price > 0) {
+                    Navigator.pop(context);
+                    _makeOffer(bookingId, price);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter a valid price')),
+                    );
+                  }
+                },
+                child: Text('Send Offer'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  // Replace the existing booking action buttons with this new method
+  Widget _buildBookingActions(Map<String, dynamic> booking) {
+    final bookingId = booking['bookingId'];
+    final negotiation = latestNegotiations?[bookingId.toString()];
+
+    // Initial load of negotiation if not already loaded
+    if (negotiation == null && booking['status'] == 'Pending') {
+      _fetchLatestNegotiation(bookingId);
+    }
+
+    if (booking['status'] == 'Completed') {
+      return Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          'Pending Customer Approval of Completion',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Colors.orange,
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      );
+    }
+
+    if (booking['status'] == 'Pending') {
+      // Show accept/reject for customer counter offer
+      if (negotiation != null && negotiation['offeredByRole'] == 'Customer') {
+        return Row(
+          children: [
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed:
+                    isUpdatingStatus
+                        ? null
+                        : () => updateBookingStatus(bookingId, 'Reject'),
+                child: Text('Reject', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed:
+                    isUpdatingStatus
+                        ? null
+                        : () => updateBookingStatus(bookingId, 'InProgress'),
+                child: Text('Accept', style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        );
+      }
+
+      // Show waiting for customer approval if seller has made an offer
+      if (negotiation != null && negotiation['offeredByRole'] == 'Seller') {
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            'Waiting for Customer Approval',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
+          ),
+        );
+      }
+
+      // Show make offer/reject buttons for initial state
+      return Row(
+        children: [
+          SizedBox(height: 8),
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed:
+                  isUpdatingStatus
+                      ? null
+                      : () => updateBookingStatus(bookingId, 'Reject'),
+              child: Text('Reject', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              onPressed:
+                  isUpdatingStatus
+                      ? null
+                      : () => _showPriceOfferDialog(bookingId),
+              child: Text('Make Offer', style: TextStyle(color: Colors.white)),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Show mark as completed button for in-progress bookings
+    if (booking['status'] == 'InProgress') {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            padding: EdgeInsets.symmetric(vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed:
+              isUpdatingStatus ? null : () => markWorkCompleted(bookingId),
+          child: Text(
+            'Mark Work as Completed',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+
+    return _buildStatusButton(booking);
   }
 
   @override
@@ -444,8 +709,8 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                       itemBuilder: (context, index) {
                         final booking = bookings[index];
                         return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder:
@@ -455,6 +720,9 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                     ),
                               ),
                             );
+                            fetchBookings(
+                              selectedStatus,
+                            ); // Refresh after returning
                           },
                           child: Card(
                             margin: EdgeInsets.only(bottom: 16),
@@ -633,167 +901,115 @@ class _BookingRequestsScreenState extends State<BookingRequestsScreen> {
                                           ),
                                         ],
                                       ),
-
-                                      if (booking['status'] == 'Pending')
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 16),
+                                      SizedBox(height: 8),
+                                      // Add price display section
+                                      if (booking['status'] == 'InProgress' ||
+                                          booking['status'] == 'Completed' ||
+                                          booking['status'] == 'finished') ...[
+                                        SizedBox(height: 16),
+                                        Container(
+                                          padding: EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color: Colors.green[200]!,
+                                            ),
+                                          ),
                                           child: Row(
                                             children: [
-                                              Expanded(
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            Colors.red,
-                                                        foregroundColor:
-                                                            Colors.white,
-                                                      ),
-                                                  onPressed:
-                                                      isUpdatingStatus &&
-                                                              updatingBookingId ==
-                                                                  booking['bookingId']
-                                                          ? null
-                                                          : () => updateBookingStatus(
-                                                            booking['bookingId'],
-                                                            'Reject',
-                                                          ),
-                                                  child:
-                                                      isUpdatingStatus &&
-                                                              updatingBookingId ==
-                                                                  booking['bookingId'] &&
-                                                              currentAction ==
-                                                                  'Reject'
-                                                          ? SizedBox(
-                                                            height: 20,
-                                                            width: 20,
-                                                            child: CircularProgressIndicator(
-                                                              valueColor:
-                                                                  AlwaysStoppedAnimation<
-                                                                    Color
-                                                                  >(
-                                                                    Colors
-                                                                        .white,
-                                                                  ),
-                                                              strokeWidth: 2,
-                                                            ),
-                                                          )
-                                                          : Text('Reject'),
-                                                ),
+                                              Icon(
+                                                Icons.payment,
+                                                color: Colors.green,
                                               ),
                                               SizedBox(width: 8),
-                                              Expanded(
-                                                child: ElevatedButton(
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            Colors.green,
-                                                        foregroundColor:
-                                                            Colors.white,
-                                                      ),
-                                                  onPressed:
-                                                      isUpdatingStatus &&
-                                                              updatingBookingId ==
-                                                                  booking['bookingId']
-                                                          ? null
-                                                          : () => updateBookingStatus(
-                                                            booking['bookingId'],
-                                                            'Accept',
-                                                          ),
-                                                  child:
-                                                      isUpdatingStatus &&
-                                                              updatingBookingId ==
-                                                                  booking['bookingId'] &&
-                                                              currentAction ==
-                                                                  'Accept'
-                                                          ? SizedBox(
-                                                            height: 20,
-                                                            width: 20,
-                                                            child: CircularProgressIndicator(
-                                                              valueColor:
-                                                                  AlwaysStoppedAnimation<
-                                                                    Color
-                                                                  >(
-                                                                    Colors
-                                                                        .white,
-                                                                  ),
-                                                              strokeWidth: 2,
-                                                            ),
-                                                          )
-                                                          : Text('Accept'),
+                                              Text(
+                                                'Agreed Price: ',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.grey[700],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Rs. ${booking['finalPrice']?.toString() ?? 'N/A'}',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.green[700],
+                                                  fontWeight: FontWeight.bold,
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
-
-                                      if (booking['status'] == 'InProgress')
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 16),
-                                          child: SizedBox(
-                                            width: double.infinity,
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.green,
-                                                foregroundColor: Colors.white,
-                                              ),
-                                              onPressed:
-                                                  isUpdatingStatus &&
-                                                          updatingBookingId ==
-                                                              booking['bookingId']
-                                                      ? null
-                                                      : () => markWorkCompleted(
-                                                        booking['bookingId'],
-                                                      ),
-                                              child:
-                                                  isUpdatingStatus &&
-                                                          updatingBookingId ==
-                                                              booking['bookingId']
-                                                      ? SizedBox(
-                                                        height: 20,
-                                                        width: 20,
-                                                        child: CircularProgressIndicator(
-                                                          valueColor:
-                                                              AlwaysStoppedAnimation<
-                                                                Color
-                                                              >(Colors.white),
-                                                          strokeWidth: 2,
-                                                        ),
-                                                      )
-                                                      : Text(
-                                                        'Mark Work as Completed',
-                                                      ),
+                                      ] else if (booking['status'] ==
+                                              'Pending' &&
+                                          latestNegotiations[booking['bookingId']
+                                                  .toString()] !=
+                                              null) ...[
+                                        SizedBox(height: 12),
+                                        Container(
+                                          padding: EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(
+                                              8,
+                                            ),
+                                            border: Border.all(
+                                              color:
+                                                  latestNegotiations[booking['bookingId']
+                                                              .toString()]!['offeredByRole'] ==
+                                                          'Seller'
+                                                      ? Colors.green[200]!
+                                                      : Colors.blue[200]!,
                                             ),
                                           ),
-                                        ),
-
-                                      if (booking['status'] == 'Completed')
-                                        Padding(
-                                          padding: EdgeInsets.only(top: 16),
-                                          child: Container(
-                                            width: double.infinity,
-                                            padding: EdgeInsets.all(8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.orange.withOpacity(
-                                                0.1,
+                                          child: Row(
+                                            children: [
+                                              Icon(
+                                                Icons.payment,
+                                                color:
+                                                    latestNegotiations[booking['bookingId']
+                                                                .toString()]!['offeredByRole'] ==
+                                                            'Seller'
+                                                        ? Colors.green
+                                                        : Colors.blue,
                                               ),
-                                              borderRadius:
-                                                  BorderRadius.circular(4),
-                                            ),
-                                            child: Text(
-                                              'Waiting for Customer Approval',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
-                                                color: Colors.orange,
-                                                fontWeight: FontWeight.bold,
+                                              SizedBox(width: 8),
+                                              Text(
+                                                latestNegotiations[booking['bookingId']
+                                                            .toString()]!['offeredByRole'] ==
+                                                        'Seller'
+                                                    ? 'Your Offer: '
+                                                    : 'Customer Offer: ',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.grey[700],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
+                                              Text(
+                                                'Rs. ${latestNegotiations[booking['bookingId'].toString()]!['offeredPrice']?.toString() ?? 'N/A'}',
+                                                style: TextStyle(
+                                                  fontSize: 15,
+                                                  color:
+                                                      latestNegotiations[booking['bookingId']
+                                                                  .toString()]!['offeredByRole'] ==
+                                                              'Seller'
+                                                          ? Colors.green[700]
+                                                          : Colors.blue[700],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
+                                      ],
 
-                                      if (booking['status'] != 'Pending' &&
-                                          booking['status'] != 'InProgress' &&
-                                          booking['status'] != 'Completed')
-                                        _buildStatusButton(booking),
+                                      SizedBox(height: 6),
+                                      _buildBookingActions(booking),
                                     ],
                                   ),
                                 ),

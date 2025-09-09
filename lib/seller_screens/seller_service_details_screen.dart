@@ -320,7 +320,11 @@ class SellerServiceDetailsScreen extends StatelessWidget {
                                   .map(
                                     (tag) => Chip(
                                       label: Text(tag),
-                                      backgroundColor: Colors.grey[200],
+                                      backgroundColor: AppColors.primary
+                                          .withOpacity(0.1),
+                                      labelStyle: TextStyle(
+                                        color: AppColors.primary,
+                                      ),
                                     ),
                                   )
                                   .toList(),

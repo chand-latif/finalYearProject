@@ -28,6 +28,8 @@ class _CustomerBookingDetailsScreenState
     extends State<CustomerBookingDetailsScreen> {
   bool isUpdatingStatus = false;
   String? currentAction;
+  Map<String, dynamic>? latestNegotiation;
+  bool isLoadingNegotiation = false;
 
   String formatDateTime(String? dateStr) {
     if (dateStr == null) return 'N/A';
@@ -273,6 +275,181 @@ class _CustomerBookingDetailsScreenState
         context,
       ).showSnackBar(SnackBar(content: Text('Could not launch phone call')));
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLatestNegotiation();
+  }
+
+  Future<void> _fetchLatestNegotiation() async {
+    setState(() => isLoadingNegotiation = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.get(
+        Uri.parse(
+          'https://fixease.pk/api/BookingNegotiation/getLatestNegotiation?BookingId=${widget.booking['bookingId']}',
+        ),
+        headers: {'Authorization': 'Bearer $token', 'accept': '*/*'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded'] == true) {
+          setState(() => latestNegotiation = data['data']);
+        }
+      }
+    } catch (e) {
+      print('Error fetching negotiation: $e');
+    } finally {
+      setState(() => isLoadingNegotiation = false);
+    }
+  }
+
+  Future<void> _makeCounterOffer(double price) async {
+    setState(() => isUpdatingStatus = true);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token == null) throw Exception('No auth token found');
+
+      final response = await http.post(
+        Uri.parse(
+          'https://fixease.pk/api/BookingNegotiation/CreateBookingNegotiation',
+        ),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'BookingId': widget.booking['bookingId'].toString(),
+          'OfferedPrice': price.toString(),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['succeeded'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Counter offer submitted'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          await _fetchLatestNegotiation();
+        } else {
+          throw Exception(data['message'] ?? 'Failed to submit counter offer');
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+      );
+    } finally {
+      setState(() => isUpdatingStatus = false);
+    }
+  }
+
+  Future<void> _showCounterOfferDialog() async {
+    final priceController = TextEditingController();
+    return showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text('Make Counter Offer'),
+            content: TextField(
+              controller: priceController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Enter Price',
+                prefixText: 'Rs. ',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final price = double.tryParse(priceController.text);
+                  if (price != null && price > 0) {
+                    Navigator.pop(context);
+                    _makeCounterOffer(price);
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter a valid price')),
+                    );
+                  }
+                },
+                child: Text('Send Counter Offer'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildPriceOfferCard() {
+    if (latestNegotiation == null) return SizedBox.shrink();
+
+    final isSellerOffer = latestNegotiation!['offeredByRole'] == 'Seller';
+    final isCustomerOffer = latestNegotiation!['offeredByRole'] == 'Customer';
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSellerOffer ? Colors.green[200]! : Colors.blue[200]!,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.payment,
+                color: isSellerOffer ? Colors.green : Colors.blue,
+              ),
+              SizedBox(width: 8),
+              Text(
+                isSellerOffer
+                    ? 'Price Offered by Seller'
+                    : 'Your Counter Offer',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Rs. ${latestNegotiation!['offeredPrice'].toString()}',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: isSellerOffer ? Colors.green[700] : Colors.blue[700],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -522,6 +699,51 @@ class _CustomerBookingDetailsScreenState
                         ],
                       ),
                     ),
+                    SizedBox(height: 16),
+
+                    // Price Offer Card
+                    if (booking['status'] == 'Pending' &&
+                        latestNegotiation != null)
+                      _buildPriceOfferCard()
+                    else if (booking['status'] == 'InProgress' ||
+                        booking['status'] == 'Completed' ||
+                        booking['status'] == 'finished')
+                      Container(
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green[200]!),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.payment, color: Colors.green),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Agreed Price',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 8),
+                            Text(
+                              'Rs. ${booking['finalPrice']?.toString() ?? 'N/A'}',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.green[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -538,84 +760,193 @@ class _CustomerBookingDetailsScreenState
           ],
         ),
         child:
-            _buildBottomButton(booking) ??
-            Row(
-              children: [
-                if (booking['status'] == 'Accept') ...[
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      onPressed:
-                          isUpdatingStatus ? null : () => confirmBooking(false),
-                      child:
-                          isUpdatingStatus && currentAction == 'cancel'
-                              ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text('Cancel'),
+            booking['status'] == 'Pending' &&
+                    latestNegotiation != null &&
+                    latestNegotiation!['offeredByRole'] == 'Seller'
+                ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed:
+                                isUpdatingStatus
+                                    ? null
+                                    : () => confirmBooking(false),
+                            child: Text(
+                              'Reject',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            onPressed:
+                                isUpdatingStatus
+                                    ? null
+                                    : _showCounterOfferDialog,
+                            child: Text(
+                              'Counter Offer',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                      ],
                     ),
-                  ),
-                  SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
+
+                    ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                       onPressed:
                           isUpdatingStatus ? null : () => confirmBooking(true),
-                      child:
-                          isUpdatingStatus && currentAction == 'agree'
-                              ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text('Confirm'),
-                    ),
-                  ),
-                ] else if (booking['status'] == 'Completed') ...[
-                  Expanded(
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        'Accept',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                      onPressed:
-                          isUpdatingStatus ? null : approveWorkCompletion,
-                      child:
-                          isUpdatingStatus && currentAction == 'approve'
-                              ? SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : Text('Approve Work Completion'),
+                    ),
+                  ],
+                )
+                : booking['status'] == 'Pending' &&
+                    latestNegotiation != null &&
+                    latestNegotiation!['offeredByRole'] == 'Customer'
+                ? Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: Text(
+                    'Waiting for Seller Approval',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
                     ),
                   ),
-                ],
-              ],
-            ),
+                )
+                : _buildBottomButton(booking) ??
+                    Row(
+                      children: [
+                        if (booking['status'] == 'Accept') ...[
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed:
+                                  isUpdatingStatus
+                                      ? null
+                                      : () => confirmBooking(false),
+                              child:
+                                  isUpdatingStatus && currentAction == 'cancel'
+                                      ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : Text('Cancel'),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed:
+                                  isUpdatingStatus
+                                      ? null
+                                      : () => confirmBooking(true),
+                              child:
+                                  isUpdatingStatus && currentAction == 'agree'
+                                      ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : Text('Confirm'),
+                            ),
+                          ),
+                        ] else if (booking['status'] == 'Completed') ...[
+                          Expanded(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                              ),
+                              onPressed:
+                                  isUpdatingStatus
+                                      ? null
+                                      : approveWorkCompletion,
+                              child:
+                                  isUpdatingStatus && currentAction == 'approve'
+                                      ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                      : Text('Approve Work Completion'),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
       ),
     );
   }

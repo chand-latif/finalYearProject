@@ -39,6 +39,9 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
   final addressController = TextEditingController();
   final searchController = TextEditingController();
 
+  // Service Tags List
+  List<String> serviceTags = [];
+
   final Map<String, int> serviceCategories = {
     'Plumber': 9,
     'Painter': 10,
@@ -69,14 +72,29 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
     // Initialize controllers with passed data
     descriptionController.text = widget.initialData['description'] ?? '';
     contactNumberController.text = widget.initialData['contactNumber'] ?? '';
-    serviceTagsController.text = widget.initialData['serviceTags'] ?? '';
     providerNameController.text = widget.initialData['providerName'] ?? '';
+
+    // Initialize service tags from existing tags string
+    final existingTags = widget.initialData['serviceTags']?.toString() ?? '';
+    if (existingTags.isNotEmpty) {
+      serviceTags =
+          existingTags
+              .split(' ')
+              .map((tag) => tag.trim())
+              .where((tag) => tag.isNotEmpty)
+              .toList();
+    }
     addressController.text = widget.initialData['address'] ?? '';
 
     // Set initial category
-    final categoryName = widget.initialData['categoryName'];
-    selectedCategory = categoryName;
-    selectedCategoryId = serviceCategories[categoryName];
+    final categoryName = widget.initialData['categoryName'] as String?;
+    if (categoryName != null && serviceCategories.containsKey(categoryName)) {
+      selectedCategory = categoryName;
+      selectedCategoryId = serviceCategories[categoryName];
+    } else {
+      selectedCategory = serviceCategories.keys.first;
+      selectedCategoryId = serviceCategories.values.first;
+    }
 
     // Set initial service type
     // serviceType = widget.initialData['serviceType'] ?? 'Published';
@@ -219,7 +237,7 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
         'CategoryId': selectedCategoryId.toString(),
         'ServiceDescription': descriptionController.text,
         'ContactNumber': contactNumberController.text,
-        'ServiceTags': serviceTagsController.text,
+        'ServiceTags': serviceTags.join(' '),
         'ServiceType': "Published",
         'ProviderName': providerNameController.text,
         'Address': addressController.text,
@@ -669,15 +687,80 @@ class _UpdateServiceScreenState extends State<UpdateServiceScreen> {
                           },
                         ),
                         SizedBox(height: 16),
-                        TextFormField(
-                          controller: serviceTagsController,
-                          decoration: _buildInputDecoration(
-                            'Service Tags',
-                            Icons.tag,
-                          ).copyWith(hintText: 'e.g. #plumbing #repair'),
-                          validator:
-                              (value) =>
-                                  value?.isEmpty ?? true ? 'Required' : null,
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextFormField(
+                              controller: serviceTagsController,
+                              decoration: _buildInputDecoration(
+                                'Service Tags',
+                                Icons.tag,
+                              ).copyWith(
+                                hintText: 'Enter tag and press Enter',
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.add),
+                                  onPressed: () {
+                                    final tag =
+                                        serviceTagsController.text.trim();
+                                    if (tag.isNotEmpty &&
+                                        !serviceTags.contains(tag)) {
+                                      setState(() {
+                                        serviceTags.add(tag);
+                                        serviceTagsController.clear();
+                                      });
+                                    }
+                                  },
+                                ),
+                              ),
+                              onFieldSubmitted: (value) {
+                                final tag = value.trim();
+                                if (tag.isNotEmpty &&
+                                    !serviceTags.contains(tag)) {
+                                  setState(() {
+                                    serviceTags.add(tag);
+                                    serviceTagsController.clear();
+                                  });
+                                }
+                              },
+                              validator:
+                                  (value) =>
+                                      serviceTags.isEmpty
+                                          ? 'Add at least one tag'
+                                          : null,
+                            ),
+                            if (serviceTags.isNotEmpty)
+                              Container(
+                                margin: EdgeInsets.only(top: 8),
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children:
+                                      serviceTags
+                                          .map(
+                                            (tag) => Chip(
+                                              label: Text(tag),
+                                              deleteIcon: Icon(
+                                                Icons.close,
+                                                size: 18,
+                                              ),
+                                              onDeleted: () {
+                                                setState(() {
+                                                  serviceTags.remove(tag);
+                                                });
+                                              },
+                                              backgroundColor: AppColors.primary
+                                                  .withOpacity(0.1),
+                                              labelStyle: TextStyle(
+                                                color: AppColors.primary,
+                                              ),
+                                              deleteIconColor:
+                                                  AppColors.primary,
+                                            ),
+                                          )
+                                          .toList(),
+                                ),
+                              ),
+                          ],
                         ),
                       ],
                     ),

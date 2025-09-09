@@ -34,6 +34,9 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
   final addressController = TextEditingController();
   final searchController = TextEditingController();
 
+  // Service Tags List
+  List<String> serviceTags = [];
+
   // Add these at class level
   final Map<String, int> serviceCategories = {
     'Plumber': 9,
@@ -427,7 +430,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         'CategoryId': selectedCategoryId.toString(),
         'ServiceDescription': descriptionController.text,
         'ContactNumber': contactNumberController.text,
-        'ServiceTags': serviceTagsController.text,
+        'ServiceTags': serviceTags.join(' '),
         'serviceType': 'Published',
         'ProviderName': providerNameController.text,
         'Address': selectedAddress!,
@@ -458,7 +461,7 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('service of this category already exists!'),
+              content: Text('${responseData['message']}'),
               backgroundColor: const Color.fromARGB(255, 222, 84, 74),
             ),
           );
@@ -707,15 +710,88 @@ class _CreateServiceScreenState extends State<CreateServiceScreen> {
                             },
                           ),
                           SizedBox(height: 16),
-                          TextFormField(
-                            controller: serviceTagsController,
-                            decoration: _buildInputDecoration(
-                              'Service Tags',
-                              Icons.tag,
-                            ).copyWith(hintText: 'e.g. #plumbing #repair'),
-                            validator:
-                                (value) =>
-                                    value?.isEmpty ?? true ? 'Required' : null,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              TextFormField(
+                                controller: serviceTagsController,
+                                decoration: _buildInputDecoration(
+                                  'Service Keywords',
+                                  Icons.tag,
+                                ).copyWith(
+                                  hintText: 'Enter tag and press Enter',
+                                  helperText:
+                                      '✨ Add keywords that help customers find your service (e.g., leakage, drainage, wiring, repair, installation etc.)',
+                                  helperStyle: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                  helperMaxLines: 10,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(Icons.add),
+                                    onPressed: () {
+                                      final tag =
+                                          serviceTagsController.text.trim();
+                                      if (tag.isNotEmpty &&
+                                          !serviceTags.contains(tag)) {
+                                        setState(() {
+                                          serviceTags.add(tag);
+                                          serviceTagsController.clear();
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ),
+                                onFieldSubmitted: (value) {
+                                  final tag = value.trim();
+                                  if (tag.isNotEmpty &&
+                                      !serviceTags.contains(tag)) {
+                                    setState(() {
+                                      serviceTags.add(tag);
+                                      serviceTagsController.clear();
+                                    });
+                                  }
+                                },
+                                validator:
+                                    (value) =>
+                                        serviceTags.isEmpty
+                                            ? 'Add at least one tag'
+                                            : null,
+                              ),
+                              if (serviceTags.isNotEmpty)
+                                Container(
+                                  margin: EdgeInsets.only(top: 8),
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children:
+                                        serviceTags
+                                            .map(
+                                              (tag) => Chip(
+                                                label: Text(tag),
+                                                deleteIcon: Icon(
+                                                  Icons.close,
+                                                  size: 18,
+                                                ),
+                                                onDeleted: () {
+                                                  setState(() {
+                                                    serviceTags.remove(tag);
+                                                  });
+                                                },
+                                                backgroundColor: AppColors
+                                                    .primary
+                                                    .withOpacity(0.1),
+                                                labelStyle: TextStyle(
+                                                  color: AppColors.primary,
+                                                ),
+                                                deleteIconColor:
+                                                    AppColors.primary,
+                                              ),
+                                            )
+                                            .toList(),
+                                  ),
+                                ),
+                            ],
                           ),
                         ],
                       ),

@@ -459,35 +459,11 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
 
             SizedBox(height: 16),
 
+            // Updated booking overview section
             if (isLoading)
               _buildBookingOverviewShimmer()
             else
               _buildBookingOverview(),
-
-            SizedBox(height: 20),
-
-            // Stats Row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildStatCard(
-                    'Completed Jobs',
-                    finishedBookings.toString(),
-                    Icons.done_all, // Changed icon to done_all
-                    Colors.teal,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildStatCard(
-                    'Rating ($totalRatings)',
-                    averageRating.toStringAsFixed(1),
-                    Icons.star,
-                    Colors.amber,
-                  ),
-                ),
-              ],
-            ),
 
             SizedBox(height: 24),
 
@@ -611,38 +587,164 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
   }
 
   Widget _buildBookingOverview() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildBookingCard(
-            'Pending',
+    return Container(
+      child: GridView.count(
+        shrinkWrap: true,
+        crossAxisCount: 2,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.5, // Changed from 1.5 to 1.3 to make cards taller
+        physics: NeverScrollableScrollPhysics(),
+        children: [
+          _buildBookingOverviewCard(
+            'Pending Requests',
             pendingBookings.toString(),
             Icons.schedule,
             Colors.orange,
-            () => Navigator.pushNamed(context, '/bookingRequests'),
+            () => Navigator.pushNamed(context, '/sellerBookingRequests'),
           ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: _buildBookingCard(
+          _buildBookingOverviewCard(
             'In Progress',
             inProgressBookings.toString(),
             Icons.engineering,
             Colors.blue,
-            () => Navigator.pushNamed(context, '/bookingRequests'),
+            () => Navigator.pushNamed(context, '/sellerBookingRequests'),
           ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: _buildBookingCard(
-            'Accepted',
-            acceptedBookings.toString(),
+          _buildBookingOverviewCard(
+            'Completed Jobs',
+            finishedBookings.toString(),
             Icons.check_circle_outline,
             Colors.green,
-            () => Navigator.pushNamed(context, '/bookingRequests'),
+            () => Navigator.pushNamed(context, '/sellerBookingRequests'),
           ),
+          _buildRatingCard(
+            'Rating',
+            '$totalRatings Reviews',
+            averageRating.toStringAsFixed(1),
+            Icons.star,
+            Colors.amber,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBookingOverviewCard(
+    String title,
+    String count,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 10,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
-      ],
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  count,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRatingCard(
+    String title,
+    String subtitle,
+    String rating,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              SizedBox(width: 12),
+              Text(
+                rating,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -702,7 +804,6 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
           recentBookings.map((booking) {
             return GestureDetector(
               onTap: () {
-                // Replace named route navigation with MaterialPageRoute
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -710,7 +811,6 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                         (context) => BookingRequestDetailsScreen(
                           booking: booking,
                           onStatusChanged: () {
-                            // Refresh data when returning from details
                             fetchStats();
                             fetchRecentBookings();
                           },
@@ -719,112 +819,143 @@ class _ServiceProviderHomeState extends State<ServiceProviderHome> {
                 );
               },
               child: Card(
-                color: Colors.white,
                 margin: EdgeInsets.only(bottom: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                color: Colors.white,
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          Text(
+                            booking['customerName'] ?? 'N/A',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        booking['description'] ?? 'No description',
+                        style: TextStyle(color: Colors.grey[600]),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.schedule,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Proposed: ${formatDateTime(booking['customerProposedTime'])}',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.category,
+                            size: 16,
+                            color: AppColors.primary,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            booking['category'] ?? 'N/A',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Price display section
+                      if (booking['status'] == 'InProgress' ||
+                          booking['status'] == 'Completed' ||
+                          booking['status'] == 'finished') ...[
+                        SizedBox(height: 16),
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green[200]!),
+                          ),
+                          child: Row(
                             children: [
+                              Icon(Icons.payment, color: Colors.green),
+                              SizedBox(width: 8),
                               Text(
-                                booking['customerName'] ?? 'N/A',
+                                'Agreed Price: ',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 15,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                'Rs. ${booking['finalPrice']?.toString() ?? 'N/A'}',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.green[700],
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 8),
-                          Text(
-                            booking['description'] ?? 'No description',
-                            style: TextStyle(color: Colors.grey[600]),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.schedule,
-                                size: 16,
-                                color: AppColors.primary,
-                              ),
-                              SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  'Proposed: ${formatDateTime(booking['customerProposedTime'])}',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.category,
-                                size: 16,
-                                color: AppColors.primary,
-                              ),
-                              SizedBox(width: 4),
-                              Text(
-                                booking['category'] ?? 'N/A',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ],
-                          ),
+                        ),
+                      ],
 
-                          // Status indicator - similar to booking requests but without action buttons
-                          if (booking['status'] != null)
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.symmetric(vertical: 12),
-                              margin: EdgeInsets.only(top: 12),
-                              decoration: BoxDecoration(
-                                color: _getStatusColor(
-                                  booking['status'],
-                                ).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey[200]!),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    _getStatusIcon(booking['status']),
-                                    color: _getStatusColor(booking['status']),
-                                    size: 18,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    _getStatusText(booking['status']),
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: _getStatusColor(booking['status']),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
+                      SizedBox(height: 12),
+                      // Status indicator - similar to booking requests
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(
+                            booking['status'],
+                          ).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[200]!),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              _getStatusIcon(booking['status']),
+                              color: _getStatusColor(booking['status']),
+                              size: 18,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              _getStatusText(booking['status']),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: _getStatusColor(booking['status']),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
                             ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );

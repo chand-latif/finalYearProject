@@ -62,7 +62,9 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
         ),
       );
 
-      if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && jsonResponse['statusCode'] == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Service deleted successfully'),
@@ -394,6 +396,12 @@ class _MyServicesScreenState extends State<MyServicesScreen> {
                                                   style: TextStyle(
                                                     fontSize: 12,
                                                   ),
+                                                ),
+                                                backgroundColor: AppColors
+                                                    .primary
+                                                    .withOpacity(0.1),
+                                                labelStyle: TextStyle(
+                                                  color: AppColors.primary,
                                                 ),
                                                 materialTapTargetSize:
                                                     MaterialTapTargetSize
