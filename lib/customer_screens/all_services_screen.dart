@@ -400,6 +400,13 @@ class _AllServicesScreenState extends State<AllServicesScreen> {
                                                           fontSize: 12,
                                                         ),
                                                       ),
+                                                      backgroundColor: AppColors
+                                                          .primary
+                                                          .withOpacity(0.1),
+                                                      labelStyle: TextStyle(
+                                                        color:
+                                                            AppColors.primary,
+                                                      ),
                                                       materialTapTargetSize:
                                                           MaterialTapTargetSize
                                                               .shrinkWrap,

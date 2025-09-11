@@ -300,13 +300,13 @@ class _CustomerBookingDetailsScreenState
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['succeeded'] == true) {
-          setState(() => latestNegotiation = data['data']);
+          if (mounted) setState(() => latestNegotiation = data['data']);
         }
       }
     } catch (e) {
       print('Error fetching negotiation: $e');
     } finally {
-      setState(() => isLoadingNegotiation = false);
+      if (mounted) setState(() => isLoadingNegotiation = false);
     }
   }
 

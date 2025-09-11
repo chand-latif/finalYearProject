@@ -299,6 +299,7 @@ class ServiceDetailsScreen extends StatelessWidget {
                         SizedBox(height: 16),
                         Container(
                           padding: EdgeInsets.all(16),
+
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
@@ -309,12 +310,14 @@ class ServiceDetailsScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'Tags',
+
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.grey[600],
                                 ),
                               ),
+
                               SizedBox(height: 12),
                               Wrap(
                                 spacing: 8,
@@ -329,11 +332,17 @@ class ServiceDetailsScreen extends StatelessWidget {
                                               vertical: 6,
                                             ),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey[100],
+                                              color: AppColors.primary
+                                                  .withOpacity(0.1),
                                               borderRadius:
                                                   BorderRadius.circular(20),
                                             ),
-                                            child: Text(tag),
+                                            child: Text(
+                                              tag,
+                                              style: TextStyle(
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
                                           ),
                                         )
                                         .toList(),

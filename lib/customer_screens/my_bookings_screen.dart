@@ -779,156 +779,212 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                booking['companyName'] ?? 'N/A',
-                                                style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                booking['serviceProviderName'] ??
-                                                    'N/A',
-                                                style: TextStyle(
-                                                  color: Colors.grey[600],
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Row(
-                                            children: [
-                                              // Status container
-                                              // Container(
-                                              //   padding: EdgeInsets.symmetric(
-                                              //     horizontal: 8,
-                                              //     vertical: 4,
-                                              //   ),
-                                              //   decoration: BoxDecoration(
-                                              //     color: AppColors.primary
-                                              //         .withOpacity(0.1),
-                                              //     borderRadius:
-                                              //         BorderRadius.circular(4),
-                                              //   ),
-                                              //   child: Text(
-                                              //     booking['status'] ??
-                                              //         'Pending',
-                                              //     style: TextStyle(
-                                              //       color: AppColors.primary,
-                                              //       fontWeight: FontWeight.bold,
-                                              //     ),
-                                              //   ),
-                                              // ),
-                                              // IconButton(
-                                              //   icon: Icon(
-                                              //     Icons.edit_outlined,
-                                              //     color: AppColors.primary,
-                                              //   ),
-                                              //   onPressed: () {
-                                              //     Navigator.push(
-                                              //       context,
-                                              //       MaterialPageRoute(
-                                              //         builder:
-                                              //             (
-                                              //               context,
-                                              //             ) => UpdateBookingScreen(
-                                              //               booking: booking,
-                                              //               onUpdate:
-                                              //                   () => fetchBookings(
-                                              //                     selectedStatus,
-                                              //                   ),
-                                              //             ),
-                                              //       ),
-                                              //     );
-                                              //   },
-                                              // ),
-                                              IconButton(
-                                                icon: Icon(
-                                                  Icons.delete_outline,
-                                                  color: Colors.red,
-                                                ),
-                                                onPressed:
-                                                    () =>
-                                                        showDeleteConfirmation(
-                                                          booking['bookingId'],
-                                                        ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 12),
-
-                                      // Category
+                                      // Modernized company and provider name
                                       Row(
                                         children: [
-                                          Icon(
-                                            Icons.category_outlined,
-                                            size: 16,
-                                            color: AppColors.primary,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            booking['category'] ?? 'N/A',
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-
-                                      SizedBox(height: 8),
-
-                                      // Contact Number
-                                      if (booking['contactNumber'] != null &&
-                                          booking['contactNumber'] != '0')
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.phone,
-                                              size: 16,
+                                          CircleAvatar(
+                                            backgroundColor: AppColors.primary
+                                                .withOpacity(0.1),
+                                            child: Icon(
+                                              Icons.business,
                                               color: AppColors.primary,
                                             ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              booking['contactNumber'],
-                                              style: TextStyle(
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-
-                                      SizedBox(height: 8),
-
-                                      // Booking Date
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.calendar_today,
-                                            size: 16,
-                                            color: AppColors.primary,
+                                            radius: 22,
                                           ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            _formatDate(
-                                              booking['customerProposedTime'],
+                                          SizedBox(width: 12),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  booking['companyName'] ??
+                                                      'N/A',
+                                                  style: TextStyle(
+                                                    fontSize: 17,
+                                                    fontWeight: FontWeight.w600,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                                SizedBox(height: 2),
+                                                Text(
+                                                  booking['serviceProviderName'] ??
+                                                      'N/A',
+                                                  style: TextStyle(
+                                                    color: Colors.grey[600],
+                                                    fontSize: 13,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                            style: TextStyle(
-                                              color: Colors.grey[600],
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.red,
                                             ),
+                                            onPressed:
+                                                () => showDeleteConfirmation(
+                                                  booking['bookingId'],
+                                                ),
                                           ),
                                         ],
                                       ),
+                                      SizedBox(height: 14),
+                                      // Info cards section
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.grey[50],
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: Colors.grey[200]!,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                // Category with icon
+                                                Expanded(
+                                                  child: Row(
+                                                    children: [
+                                                      Container(
+                                                        padding: EdgeInsets.all(
+                                                          6,
+                                                        ),
+                                                        decoration: BoxDecoration(
+                                                          color: AppColors
+                                                              .primary
+                                                              .withOpacity(0.1),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                6,
+                                                              ),
+                                                        ),
+                                                        child: Icon(
+                                                          Icons
+                                                              .category_outlined,
+                                                          size: 18,
+                                                          color:
+                                                              AppColors.primary,
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 8),
+                                                      Flexible(
+                                                        child: Text(
+                                                          booking['category'] ??
+                                                              'N/A',
+                                                          style: TextStyle(
+                                                            fontSize: 14,
+                                                            color:
+                                                                Colors
+                                                                    .grey[800],
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+
+                                                if (booking['contactNumber'] !=
+                                                        null &&
+                                                    booking['contactNumber'] !=
+                                                        '0') ...[
+                                                  SizedBox(width: 16),
+                                                  // Phone number with icon
+                                                  Row(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    children: [
+                                                      Container(
+                                                        padding: EdgeInsets.all(
+                                                          6,
+                                                        ),
+                                                        decoration: BoxDecoration(
+                                                          color: AppColors
+                                                              .primary
+                                                              .withOpacity(0.1),
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                6,
+                                                              ),
+                                                        ),
+                                                        child: Icon(
+                                                          Icons.phone,
+                                                          size: 18,
+                                                          color:
+                                                              AppColors.primary,
+                                                        ),
+                                                      ),
+                                                      SizedBox(width: 8),
+                                                      Text(
+                                                        booking['contactNumber'],
+                                                        style: TextStyle(
+                                                          fontSize: 14,
+                                                          color:
+                                                              Colors.grey[800],
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            SizedBox(height: 8),
+                                            // Date and time with icon
+                                            Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(6),
+                                                  decoration: BoxDecoration(
+                                                    color: AppColors.primary
+                                                        .withOpacity(0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons.calendar_today,
+                                                    size: 18,
+                                                    color: AppColors.primary,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(
+                                                  _formatDateWithTime(
+                                                    booking['customerProposedTime'],
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey[800],
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            SizedBox(height: 8),
+
+                                            // Date & Time
+                                          ],
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
 
                                       // Add Price Card
                                       if (booking['status'] == 'Pending' &&
@@ -1208,6 +1264,20 @@ class _MyBookingsScreenState extends State<MyBookingsScreen> {
     try {
       final date = DateTime.parse(dateStr);
       return '${date.day}-${date.month}-${date.year}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  // New helper method to format date and time
+  String _formatDateWithTime(String? dateStr) {
+    if (dateStr == null) return 'N/A';
+    try {
+      final dateTime = DateTime.parse(dateStr);
+      final date = '${dateTime.day}-${dateTime.month}-${dateTime.year}';
+      final time =
+          '${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+      return '$date $time';
     } catch (e) {
       return dateStr;
     }
