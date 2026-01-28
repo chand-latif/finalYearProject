@@ -1,18 +1,21 @@
-import 'package:fix_easy/seller_screens/profile_page_seller.dart';
-import 'package:flutter/material.dart';
-import 'auth/login_screen.dart';
-import 'auth/account_type.dart';
-import 'auth/forgot_password.dart';
-import 'auth/password_confirmation.dart';
-import 'customer_screens/customer_home.dart';
 import 'dart:io';
-import 'seller_screens/seller_home.dart';
-import 'splash_screen.dart';
-import 'customer_screens/profile_page_Customer.dart';
-import 'customer_screens/my_bookings_screen.dart';
-import 'seller_screens/booking_requests_screen.dart';
-import 'customer_screens/all_services_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import 'core/network/api_client.dart';
+import 'core/services/storage_service.dart';
+import 'data/repositories/auth_repository.dart';
+import 'data/repositories/booking_repository.dart';
+import 'data/repositories/company_repository.dart';
+import 'data/repositories/service_repository.dart';
+import 'presentation/viewmodels/auth_viewmodel.dart';
+import 'presentation/viewmodels/booking_viewmodel.dart';
+import 'presentation/viewmodels/customer_home_viewmodel.dart';
+import 'presentation/viewmodels/seller_home_viewmodel.dart';
+import 'presentation/viewmodels/service_viewmodel.dart';
+import 'app.dart';
+
+/// Custom HTTP overrides for development (allows self-signed certificates)
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
@@ -23,41 +26,57 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() async {
+  // Allow bad certificates in development
   HttpOverrides.global = MyHttpOverrides();
+  
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
-  // final prefs = await SharedPreferences.getInstance();
-  // final token = prefs.getString('auth_token');
-  runApp(MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  // final String initialRoute;
+  // Initialize storage service
+  final storageService = StorageService();
+  await storageService.init();
 
-  // const MyApp({super.key});
+  // Create API client
+  final apiClient = ApiClient(storageService: storageService);
 
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      // initialRoute: initialRoute, // Default route
-      routes: {
-        '/home': (context) => MyHomePage(title: 'FYP'),
-        '/accountType': (context) => ChooseAccountType(),
-        // '/signUp': (context) => SignUp(),
-        '/ForgotPassword': (context) => ForgotPassword(),
-        '/PasswordConfirmation': (context) => PasswordConfirmation(),
-        '/customerHome': (context) => CustomerHome(),
-        '/sellerHome': (context) => ServiceProviderHome(),
-        '/customerProfile': (context) => ProfilePage(),
-        '/sellerProfile': (context) => ProfilePageSeller(),
-        '/myBookings': (context) => MyBookingsScreen(),
-        '/sellerBookingRequests': (context) => BookingRequestsScreen(),
-        '/allServices': (context) => AllServicesScreen(),
-      },
-      title: 'FYP',
+  // Create repositories
+  final authRepository = AuthRepository(
+    apiClient: apiClient,
+    storageService: storageService,
+  );
+  final companyRepository = CompanyRepository(apiClient: apiClient);
+  final serviceRepository = ServiceRepository(apiClient: apiClient);
+  final bookingRepository = BookingRepository(apiClient: apiClient);
 
-      // home: const MyHomePage(title: 'FYP'),
-      home: StartupScreen(),
-    );
-  }
+  // Run the app with providers
+  runApp(
+    MultiProvider(
+      providers: [
+        // ViewModels
+        ChangeNotifierProvider(
+          create: (_) => AuthViewModel(authRepository: authRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => CustomerHomeViewModel(
+            companyRepository: companyRepository,
+            serviceRepository: serviceRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SellerHomeViewModel(
+            bookingRepository: bookingRepository,
+            companyRepository: companyRepository,
+            serviceRepository: serviceRepository,
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => BookingViewModel(bookingRepository: bookingRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => ServiceViewModel(serviceRepository: serviceRepository),
+        ),
+      ],
+      child: const FixEasyApp(),
+    ),
+  );
 }

@@ -245,18 +245,33 @@ class _SignUpState extends State<SignUp> {
       final jsonResponse = jsonDecode(responseData);
 
       if (response.statusCode == 200 && jsonResponse["statusCode"] == 200) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("User registered successfully")));
+        // Send OTP after successful registration
+        try {
+          await sendOtp(emailController.text);
 
-        await sendOtp(emailController.text);
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Registration successful. OTP sent to your email"),
+            ),
+          );
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VerificationOTP(email: emailController.text),
-          ),
-        );
+          // Navigate to OTP verification
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VerifyOTPPage(email: emailController.text),
+            ),
+          );
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "Registration successful but failed to send OTP: $e",
+              ),
+            ),
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
